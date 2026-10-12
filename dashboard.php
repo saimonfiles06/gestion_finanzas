@@ -174,6 +174,12 @@ if (empty($_SESSION['csrf_token'])) {
         <!-- Área de contenido: se desarrollará apartado por apartado -->
         <main class="dashboard-main" id="dashboard-main">
             <section
+                id="seccion-resumen"
+                class="dashboard-seccion"
+                hidden>
+                <?php require __DIR__ . '/resumen.php'; ?>
+            </section>
+            <section
                 id="seccion-bancos"
                 class="dashboard-seccion"
                 hidden>
