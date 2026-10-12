@@ -789,3 +789,400 @@ a {
 .modo-oscuro .cerrar-sesion:hover {
     background: #3a2529;
 }
+
+/* =========================
+   BANCOS
+========================= */
+
+.bancos-pagina {
+    width: 100%;
+    color: var(--color-texto);
+}
+
+.bancos-pagina [hidden] {
+    display: none !important;
+}
+
+.bancos-cabecera {
+    margin-bottom: 24px;
+}
+
+.bancos-cabecera h1 {
+    margin: 0 0 8px;
+}
+
+.bancos-cabecera p {
+    margin: 0;
+    color: var(--color-secundario);
+}
+
+.bancos-layout {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1.25fr)
+        minmax(0, 0.8fr)
+        minmax(0, 0.9fr);
+    align-items: start;
+    gap: 20px;
+}
+
+.bancos-panel {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    background: #fff;
+}
+
+.bancos-panel-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.bancos-panel-cabecera h2 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.bancos-panel-cabecera > i {
+    color: var(--color-principal);
+    font-size: 22px;
+}
+
+.bancos-contador {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: #e8efff;
+    color: var(--color-principal);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.bancos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.banco-card {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--color-borde);
+    border-radius: 12px;
+    background: var(--color-fondo);
+}
+
+.banco-card-cabecera {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.banco-identidad {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.banco-identidad h3 {
+    overflow-wrap: anywhere;
+    margin: 0;
+    font-size: 15px;
+}
+
+.banco-icono {
+    display: inline-flex;
+    flex: 0 0 38px;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #e8efff;
+    color: var(--color-principal);
+    font-size: 19px;
+}
+
+.banco-saldo-actual {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.banco-saldo-actual span,
+.banco-datos-iniciales span {
+    color: var(--color-secundario);
+    font-size: 12px;
+}
+
+.banco-saldo-actual strong {
+    overflow-wrap: anywhere;
+    font-size: 23px;
+}
+
+.banco-datos-iniciales {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+    padding: 14px 0;
+    border-top: 1px solid var(--color-borde);
+    border-bottom: 1px solid var(--color-borde);
+}
+
+.banco-datos-iniciales div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.banco-datos-iniciales strong {
+    overflow-wrap: anywhere;
+    font-size: 13px;
+}
+
+.banco-permisos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.banco-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--color-texto);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.banco-checkbox input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--color-principal);
+    cursor: pointer;
+}
+
+.banco-ajuste {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--color-borde);
+}
+
+.banco-ajuste summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-principal);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+}
+
+.banco-ajuste summary::-webkit-details-marker {
+    display: none;
+}
+
+.banco-form-ajuste {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    margin-top: 16px;
+}
+
+.bancos-form {
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+}
+
+.bancos-form label,
+.banco-form-ajuste label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+    color: var(--color-texto);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.bancos-form input,
+.bancos-form select,
+.banco-form-ajuste input {
+    width: 100%;
+    min-width: 0;
+    min-height: 43px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-borde);
+    border-radius: 9px;
+    background: #fff;
+    color: var(--color-texto);
+    font: inherit;
+    font-size: 14px;
+}
+
+.bancos-form input:focus,
+.bancos-form select:focus,
+.banco-form-ajuste input:focus {
+    outline: 2px solid #93b4ff;
+    outline-offset: 1px;
+    border-color: var(--color-principal);
+}
+
+.bancos-form .boton,
+.banco-form-ajuste .boton {
+    width: 100%;
+    min-height: 44px;
+    margin-top: 3px;
+}
+
+.bancos-form .boton:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.bancos-vacio,
+.bancos-ayuda {
+    color: var(--color-secundario);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.bancos-mensaje {
+    margin-bottom: 20px;
+}
+
+/* Modo oscuro */
+
+.modo-oscuro .bancos-panel,
+.modo-oscuro .banco-card {
+    background: #1f2937;
+}
+
+.modo-oscuro .bancos-form input,
+.modo-oscuro .bancos-form select,
+.modo-oscuro .banco-form-ajuste input {
+    border-color: var(--color-borde);
+    background: #111827;
+    color: var(--color-texto);
+}
+
+.modo-oscuro .banco-icono,
+.modo-oscuro .bancos-contador {
+    background: #263a60;
+    color: #a9c4ff;
+}
+/* Mensajes de resultado en Bancos */
+.mensaje-bancos {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    margin: 0 0 20px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-size: 0.94rem;
+    line-height: 1.5;
+}
+
+.mensaje-bancos > i {
+    flex-shrink: 0;
+    font-size: 1.1rem;
+}
+
+/* Operaciones correctas */
+.mensaje-bancos--exito {
+    color: #176b3a;
+    background-color: #eaf7ee;
+    border-color: #c5e8d0;
+}
+
+/* Errores */
+.mensaje-bancos--error {
+    color: #a12626;
+    background-color: #fceeee;
+    border-color: #f2caca;
+}
+
+/* Ajustes para el modo oscuro */
+.modo-oscuro .mensaje-bancos--exito {
+    color: #a8e6bb;
+    background-color: #183b28;
+    border-color: #28583a;
+}
+
+.modo-oscuro .mensaje-bancos--error {
+    color: #ffb3b3;
+    background-color: #482525;
+    border-color: #713737;
+}
+
+/* Saldo total del listado */
+.bancos-total {
+    color: var(--color-principal);
+    font-weight: 700;
+    font-size: 1rem;
+    white-space: nowrap;
+}
+
+/* Formulario y botón para eliminar un banco */
+.banco-form-eliminar {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.boton-eliminar-banco {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid #f0caca;
+    border-radius: 8px;
+    background-color: #fff4f4;
+    color: #bd3434;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease,
+                color 0.2s ease,
+                border-color 0.2s ease;
+}
+
+.boton-eliminar-banco:hover {
+    background-color: #bd3434;
+    color: #ffffff;
+    border-color: #bd3434;
+}
+
+.boton-eliminar-banco:focus-visible {
+    outline: 2px solid var(--color-principal);
+    outline-offset: 3px;
+}
+
+.modo-oscuro .boton-eliminar-banco {
+    background-color: #402626;
+    border-color: #704040;
+    color: #ffaaaa;
+}
+
+.modo-oscuro .boton-eliminar-banco:hover {
+    background-color: #bd3434;
+    border-color: #bd3434;
+    color: #ffffff;
+}

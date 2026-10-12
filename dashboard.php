@@ -5,6 +5,10 @@ if (!isset($_SESSION['usuario_id'])) {
     header('Location: login.php');
     exit;
 }
+require_once __DIR__ . '/includes/conexion.php';
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -169,6 +173,12 @@ if (!isset($_SESSION['usuario_id'])) {
         </aside>
         <!-- Área de contenido: se desarrollará apartado por apartado -->
         <main class="dashboard-main" id="dashboard-main">
+            <section
+                id="seccion-bancos"
+                class="dashboard-seccion"
+                hidden>
+                <?php require __DIR__ . '/bancos.php'; ?>
+            </section>
         </main>
     </div>
 </body>
