@@ -189,10 +189,10 @@ if (empty($_SESSION['csrf_token'])) {
                 <?php require __DIR__ . '/bancos.php'; ?>
             </section>
             <section
-                id="seccion-bancos"
+                id="seccion-objetivos"
                 class="dashboard-seccion"
                 hidden>
-                <?php require __DIR__ . '/bancos.php'; ?>
+                <?php require __DIR__ . '/objetivos.php'; ?>
             </section>
         </main>
     </div>
