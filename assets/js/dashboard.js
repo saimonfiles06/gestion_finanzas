@@ -113,3 +113,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
     mostrarSeccion(seccionInicial);
 });
+
+window.editarCategoria = (categoriaId, nombreActual, tipo) => {
+    const nuevoNombre = window.prompt(
+        'Introduce el nuevo nombre de la categoría:',
+        nombreActual
+    );
+
+    if (nuevoNombre === null) {
+        return;
+    }
+
+    const nombre = nuevoNombre.trim();
+
+    if (nombre === '') {
+        window.alert('Introduce el nombre de la categoría.');
+        return;
+    }
+
+    if (nombre.length > 100) {
+        window.alert('El nombre no puede superar los 100 caracteres.');
+        return;
+    }
+
+    if (nombre === nombreActual) {
+        return;
+    }
+
+    const tokenCsrf = document.querySelector(
+        '#seccion-categorias input[name="csrf_token"]'
+    );
+
+    if (!tokenCsrf) {
+        window.alert(
+            'No se ha podido validar la sesión. Recarga la página e inténtalo de nuevo.'
+        );
+        return;
+    }
+
+    const formulario = document.createElement('form');
+    formulario.method = 'POST';
+    formulario.action = 'categorias_acciones.php';
+    formulario.hidden = true;
+
+    const campos = {
+        csrf_token: tokenCsrf.value,
+        accion: 'editar',
+        categoria_id: String(categoriaId),
+        nombre,
+        tipo
+    };
+
+    Object.entries(campos).forEach(([nombreCampo, valor]) => {
+        const campo = document.createElement('input');
+        campo.type = 'hidden';
+        campo.name = nombreCampo;
+        campo.value = valor;
+        formulario.appendChild(campo);
+    });
+
+    document.body.appendChild(formulario);
+    formulario.submit();
+};

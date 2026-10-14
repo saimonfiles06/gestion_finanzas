@@ -76,8 +76,7 @@ foreach ($categorias as $categoria) {
     <?php if ($mensaje !== ''): ?>
         <div
             class="categorias-alerta categorias-alerta-exito"
-            role="status"
-        >
+            role="status">
             <i class="bi bi-check-circle" aria-hidden="true"></i>
 
             <span>
@@ -93,8 +92,7 @@ foreach ($categorias as $categoria) {
     <?php if ($error !== ''): ?>
         <div
             class="categorias-alerta categorias-alerta-error"
-            role="alert"
-        >
+            role="alert">
             <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
 
             <span>
@@ -129,6 +127,12 @@ foreach ($categorias as $categoria) {
 
             <div class="categorias-lista">
 
+                <div class="categorias-lista-cabecera">
+                    <span>Tipo</span>
+                    <span>Nombre</span>
+                    <span>Acciones</span>
+                </div>
+
                 <?php if (empty($categoriasIngresos)): ?>
 
                     <div class="categorias-vacio">
@@ -142,6 +146,10 @@ foreach ($categorias as $categoria) {
 
                         <div class="categorias-item">
 
+                            <span class="categorias-tipo categorias-tipo-ingreso">
+                                Ingreso
+                            </span>
+
                             <span class="categorias-item-nombre">
                                 <?= htmlspecialchars(
                                     $categoria['nombre'],
@@ -150,52 +158,73 @@ foreach ($categorias as $categoria) {
                                 ) ?>
                             </span>
 
-                            <form
-                                method="POST"
-                                action="categorias_acciones.php"
-                                class="categorias-form-eliminar"
-                                onsubmit="return confirm('¿Seguro que quieres eliminar esta categoría?');"
-                            >
-
-                                <input
-                                    type="hidden"
-                                    name="csrf_token"
-                                    value="<?= htmlspecialchars(
-                                        $tokenCsrf,
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>"
-                                >
-
-                                <input
-                                    type="hidden"
-                                    name="accion"
-                                    value="borrar"
-                                >
-
-                                <input
-                                    type="hidden"
-                                    name="categoria_id"
-                                    value="<?= (int) $categoria['id'] ?>"
-                                >
+                            <div class="categorias-acciones">
 
                                 <button
-                                    type="submit"
-                                    class="categorias-btn-eliminar"
-                                    aria-label="Eliminar categoría <?= htmlspecialchars(
-                                        $categoria['nombre'],
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>"
-                                    title="Eliminar categoría"
-                                >
-                                    <i
-                                        class="bi bi-trash3"
-                                        aria-hidden="true"
-                                    ></i>
+                                    type="button"
+                                    class="categorias-btn-editar"
+                                    aria-label="Editar categoría <?= htmlspecialchars(
+                                                                        $categoria['nombre'],
+                                                                        ENT_QUOTES,
+                                                                        'UTF-8'
+                                                                    ) ?>"
+                                    title="Editar categoría"
+                                    onclick="editarCategoria(
+                            <?= (int) $categoria['id'] ?>,
+                            <?= htmlspecialchars(
+                                json_encode(
+                                    $categoria['nombre'],
+                                    JSON_HEX_TAG |
+                                        JSON_HEX_APOS |
+                                        JSON_HEX_QUOT |
+                                        JSON_HEX_AMP
+                                ),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>,
+                            'ingreso'
+                        )">
+                                    <i class="bi bi-pencil-square" aria-hidden="true"></i>
                                 </button>
 
-                            </form>
+                                <form
+                                    method="POST"
+                                    action="categorias_acciones.php"
+                                    class="categorias-form-eliminar"
+                                    onsubmit="return confirm('¿Seguro que quieres eliminar esta categoría?');">
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="<?= htmlspecialchars(
+                                                    $tokenCsrf,
+                                                    ENT_QUOTES,
+                                                    'UTF-8'
+                                                ) ?>">
+
+                                    <input
+                                        type="hidden"
+                                        name="accion"
+                                        value="borrar">
+
+                                    <input
+                                        type="hidden"
+                                        name="categoria_id"
+                                        value="<?= (int) $categoria['id'] ?>">
+
+                                    <button
+                                        type="submit"
+                                        class="categorias-btn-eliminar"
+                                        aria-label="Eliminar categoría <?= htmlspecialchars(
+                                                                            $categoria['nombre'],
+                                                                            ENT_QUOTES,
+                                                                            'UTF-8'
+                                                                        ) ?>"
+                                        title="Eliminar categoría">
+                                        <i class="bi bi-trash3" aria-hidden="true"></i>
+                                    </button>
+                                </form>
+
+                            </div>
 
                         </div>
 
@@ -204,6 +233,7 @@ foreach ($categorias as $categoria) {
                 <?php endif; ?>
 
             </div>
+
 
         </section>
 
@@ -227,6 +257,12 @@ foreach ($categorias as $categoria) {
 
             <div class="categorias-lista">
 
+                <div class="categorias-lista-cabecera">
+                    <span>Tipo</span>
+                    <span>Nombre</span>
+                    <span>Acciones</span>
+                </div>
+
                 <?php if (empty($categoriasGastos)): ?>
 
                     <div class="categorias-vacio">
@@ -240,6 +276,10 @@ foreach ($categorias as $categoria) {
 
                         <div class="categorias-item">
 
+                            <span class="categorias-tipo categorias-tipo-gasto">
+                                Gasto
+                            </span>
+
                             <span class="categorias-item-nombre">
                                 <?= htmlspecialchars(
                                     $categoria['nombre'],
@@ -248,52 +288,73 @@ foreach ($categorias as $categoria) {
                                 ) ?>
                             </span>
 
-                            <form
-                                method="POST"
-                                action="categorias_acciones.php"
-                                class="categorias-form-eliminar"
-                                onsubmit="return confirm('¿Seguro que quieres eliminar esta categoría?');"
-                            >
-
-                                <input
-                                    type="hidden"
-                                    name="csrf_token"
-                                    value="<?= htmlspecialchars(
-                                        $tokenCsrf,
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>"
-                                >
-
-                                <input
-                                    type="hidden"
-                                    name="accion"
-                                    value="borrar"
-                                >
-
-                                <input
-                                    type="hidden"
-                                    name="categoria_id"
-                                    value="<?= (int) $categoria['id'] ?>"
-                                >
+                            <div class="categorias-acciones">
 
                                 <button
-                                    type="submit"
-                                    class="categorias-btn-eliminar"
-                                    aria-label="Eliminar categoría <?= htmlspecialchars(
-                                        $categoria['nombre'],
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>"
-                                    title="Eliminar categoría"
-                                >
-                                    <i
-                                        class="bi bi-trash3"
-                                        aria-hidden="true"
-                                    ></i>
+                                    type="button"
+                                    class="categorias-btn-editar"
+                                    aria-label="Editar categoría <?= htmlspecialchars(
+                                                                        $categoria['nombre'],
+                                                                        ENT_QUOTES,
+                                                                        'UTF-8'
+                                                                    ) ?>"
+                                    title="Editar categoría"
+                                    onclick="editarCategoria(
+                            <?= (int) $categoria['id'] ?>,
+                            <?= htmlspecialchars(
+                                json_encode(
+                                    $categoria['nombre'],
+                                    JSON_HEX_TAG |
+                                        JSON_HEX_APOS |
+                                        JSON_HEX_QUOT |
+                                        JSON_HEX_AMP
+                                ),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>,
+                            'gasto'
+                        )">
+                                    <i class="bi bi-pencil-square" aria-hidden="true"></i>
                                 </button>
 
-                            </form>
+                                <form
+                                    method="POST"
+                                    action="categorias_acciones.php"
+                                    class="categorias-form-eliminar"
+                                    onsubmit="return confirm('¿Seguro que quieres eliminar esta categoría?');">
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="<?= htmlspecialchars(
+                                                    $tokenCsrf,
+                                                    ENT_QUOTES,
+                                                    'UTF-8'
+                                                ) ?>">
+
+                                    <input
+                                        type="hidden"
+                                        name="accion"
+                                        value="borrar">
+
+                                    <input
+                                        type="hidden"
+                                        name="categoria_id"
+                                        value="<?= (int) $categoria['id'] ?>">
+
+                                    <button
+                                        type="submit"
+                                        class="categorias-btn-eliminar"
+                                        aria-label="Eliminar categoría <?= htmlspecialchars(
+                                                                            $categoria['nombre'],
+                                                                            ENT_QUOTES,
+                                                                            'UTF-8'
+                                                                        ) ?>"
+                                        title="Eliminar categoría">
+                                        <i class="bi bi-trash3" aria-hidden="true"></i>
+                                    </button>
+                                </form>
+
+                            </div>
 
                         </div>
 
@@ -322,24 +383,21 @@ foreach ($categorias as $categoria) {
             <form
                 method="POST"
                 action="categorias_acciones.php"
-                class="categorias-formulario"
-            >
+                class="categorias-formulario">
 
                 <input
                     type="hidden"
                     name="csrf_token"
                     value="<?= htmlspecialchars(
-                        $tokenCsrf,
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>"
-                >
+                                $tokenCsrf,
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>">
 
                 <input
                     type="hidden"
                     name="accion"
-                    value="crear"
-                >
+                    value="crear">
 
                 <div class="categorias-campo">
                     <label for="categoria-nombre">Nombre</label>
@@ -351,8 +409,7 @@ foreach ($categorias as $categoria) {
                         maxlength="100"
                         placeholder="Ej. Alimentación"
                         autocomplete="off"
-                        required
-                    >
+                        required>
                 </div>
 
                 <div class="categorias-campo">
@@ -361,8 +418,7 @@ foreach ($categorias as $categoria) {
                     <select
                         id="categoria-tipo"
                         name="tipo"
-                        required
-                    >
+                        required>
                         <option value="gasto" selected>Gasto</option>
                         <option value="ingreso">Ingreso</option>
                     </select>
@@ -370,12 +426,10 @@ foreach ($categorias as $categoria) {
 
                 <button
                     type="submit"
-                    class="categorias-btn-guardar"
-                >
+                    class="categorias-btn-guardar">
                     <i
                         class="bi bi-plus-circle"
-                        aria-hidden="true"
-                    ></i>
+                        aria-hidden="true"></i>
 
                     Crear categoría
                 </button>

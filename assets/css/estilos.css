@@ -1185,8 +1185,7 @@ a {
     background-color: #bd3434;
     border-color: #bd3434;
     color: #ffffff;
-}
-/* ========================================
+}/* ========================================
    CATEGORÍAS
 ======================================== */
 
@@ -1196,9 +1195,18 @@ a {
     margin: 0 auto;
     padding: 24px;
     color: var(--texto-principal, #1e293b);
+    box-sizing: border-box;
 }
 
-/* Cabecera */
+.categorias-contenedor *,
+.categorias-contenedor *::before,
+.categorias-contenedor *::after {
+    box-sizing: border-box;
+}
+
+/* ========================================
+   CABECERA
+======================================== */
 
 .categorias-cabecera {
     margin-bottom: 28px;
@@ -1218,7 +1226,9 @@ a {
     line-height: 1.5;
 }
 
-/* Mensajes */
+/* ========================================
+   MENSAJES
+======================================== */
 
 .categorias-alerta {
     display: flex;
@@ -1233,6 +1243,7 @@ a {
 }
 
 .categorias-alerta i {
+    flex-shrink: 0;
     margin-top: 2px;
     font-size: 1.1rem;
 }
@@ -1249,7 +1260,9 @@ a {
     border-color: #fecaca;
 }
 
-/* Cuadrícula de las tres cards */
+/* ========================================
+   CUADRÍCULA DE TARJETAS
+======================================== */
 
 .categorias-grid {
     display: grid;
@@ -1258,11 +1271,8 @@ a {
     gap: 24px;
 }
 
-/* Cards */
-
 .categorias-card {
     min-width: 0;
-    overflow: hidden;
     padding: 24px;
     background: var(--fondo-tarjeta, #ffffff);
     border: 1px solid var(--borde, #e2e8f0);
@@ -1276,6 +1286,10 @@ a {
 .categorias-card:hover {
     box-shadow: 0 8px 24px rgb(15 23 42 / 7%);
 }
+
+/* ========================================
+   CABECERA DE LAS TARJETAS
+======================================== */
 
 .categorias-card-cabecera {
     display: flex;
@@ -1304,7 +1318,9 @@ a {
     line-height: 1.4;
 }
 
-/* Iconos de las cards */
+/* ========================================
+   ICONOS DE LAS TARJETAS
+======================================== */
 
 .categorias-icono {
     display: flex;
@@ -1332,7 +1348,9 @@ a {
     background: #dbeafe;
 }
 
-/* Contador de categorías */
+/* ========================================
+   CONTADOR DE CATEGORÍAS
+======================================== */
 
 .categorias-total {
     display: inline-flex;
@@ -1349,25 +1367,42 @@ a {
     font-weight: 700;
 }
 
-/* Lista de categorías */
+/* ========================================
+   LISTADO: TIPO, NOMBRE Y ACCIONES
+======================================== */
 
 .categorias-lista {
     display: flex;
     flex-direction: column;
+    min-width: 0;
+}
+
+/* Cabecera de las columnas y filas */
+
+.categorias-lista-cabecera,
+.categorias-item {
+    display: grid;
+    grid-template-columns: minmax(75px, 0.8fr) minmax(0, 1.6fr) 76px;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.categorias-lista-cabecera {
+    padding: 0 0 12px;
+    color: var(--texto-secundario, #64748b);
+    border-bottom: 1px solid var(--borde, #e2e8f0);
+    font-size: 0.76rem;
+    font-weight: 600;
+}
+
+.categorias-lista-cabecera span:last-child {
+    text-align: center;
 }
 
 .categorias-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    min-width: 0;
     padding: 13px 0;
     border-bottom: 1px solid var(--borde, #e2e8f0);
-}
-
-.categorias-item:first-child {
-    padding-top: 0;
 }
 
 .categorias-item:last-child {
@@ -1375,33 +1410,74 @@ a {
     border-bottom: none;
 }
 
-.categorias-item-nombre {
-    min-width: 0;
+/* Tipo de categoría */
+
+.categorias-tipo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: start;
+    max-width: 100%;
+    padding: 5px 8px;
+    border-radius: 7px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    line-height: 1.3;
     overflow-wrap: anywhere;
-    font-size: 0.9rem;
-    font-weight: 500;
-    line-height: 1.5;
 }
 
-/* Botón eliminar */
+.categorias-tipo-ingreso {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.categorias-tipo-gasto {
+    color: #b91c1c;
+    background: #fee2e2;
+}
+
+/* Nombre */
+
+.categorias-item-nombre {
+    min-width: 0;
+    color: var(--texto-principal, #1e293b);
+    font-size: 0.88rem;
+    font-weight: 500;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* ========================================
+   ACCIONES: EDITAR Y ELIMINAR
+======================================== */
+
+.categorias-acciones {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 0;
+}
 
 .categorias-form-eliminar {
     display: flex;
     flex-shrink: 0;
+    align-items: center;
     margin: 0;
 }
 
+.categorias-btn-editar,
 .categorias-btn-eliminar {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     padding: 0;
-    color: var(--texto-secundario, #64748b);
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 9px;
+    border-radius: 8px;
     cursor: pointer;
     transition:
         color 0.2s ease,
@@ -1409,8 +1485,18 @@ a {
         border-color 0.2s ease;
 }
 
-.categorias-btn-eliminar i {
-    font-size: 1rem;
+.categorias-btn-editar {
+    color: var(--color-principal, #2563eb);
+}
+
+.categorias-btn-editar:hover {
+    color: var(--color-principal-hover, #1d4ed8);
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.categorias-btn-eliminar {
+    color: var(--texto-secundario, #64748b);
 }
 
 .categorias-btn-eliminar:hover {
@@ -1419,12 +1505,20 @@ a {
     border-color: #fecaca;
 }
 
+.categorias-btn-editar i,
+.categorias-btn-eliminar i {
+    font-size: 1rem;
+}
+
+.categorias-btn-editar:focus-visible,
 .categorias-btn-eliminar:focus-visible {
     outline: 3px solid rgb(59 130 246 / 30%);
     outline-offset: 2px;
 }
 
-/* Estado vacío */
+/* ========================================
+   ESTADO VACÍO
+======================================== */
 
 .categorias-vacio {
     display: flex;
@@ -1450,7 +1544,9 @@ a {
     line-height: 1.5;
 }
 
-/* Formulario */
+/* ========================================
+   FORMULARIO DE CREACIÓN
+======================================== */
 
 .categorias-formulario {
     display: flex;
@@ -1471,7 +1567,6 @@ a {
 
 .categorias-campo input,
 .categorias-campo select {
-    box-sizing: border-box;
     width: 100%;
     min-height: 46px;
     padding: 11px 13px;
@@ -1497,7 +1592,9 @@ a {
     outline: none;
 }
 
-/* Botón de creación */
+/* ========================================
+   BOTÓN DE CREACIÓN
+======================================== */
 
 .categorias-btn-guardar {
     display: inline-flex;
