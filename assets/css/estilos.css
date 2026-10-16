@@ -2238,6 +2238,11 @@ a {
     line-height: 1.5;
 }
 
+/* Ocultar los campos que no corresponden al tipo de registro */
+.grupo-campo-registro[hidden] {
+    display: none !important;
+}
+
 .formulario-registro-acciones {
     display: flex;
     justify-content: flex-end;
