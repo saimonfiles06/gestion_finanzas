@@ -15,6 +15,267 @@ $usuarioId = (int) $_SESSION['usuario_id'];
 
 /*
 |--------------------------------------------------------------------------
+| Periodo seleccionado para los totales del resumen
+|--------------------------------------------------------------------------
+*/
+
+$rangoResumen = $_GET['rango'] ?? 'mensual';
+if (!is_string($rangoResumen) || !in_array($rangoResumen, ['mensual', 'anual'], true)) {
+    $rangoResumen = 'mensual';
+}
+
+$consultaPeriodosConRegistros = $conexion->prepare(
+    'SELECT DISTINCT DATE_FORMAT(actividad.fecha, "%Y-%m") AS periodo
+     FROM (
+         SELECT fecha
+         FROM registros
+         WHERE usuario_id = :usuario_registros
+
+         UNION ALL
+
+         SELECT fecha
+         FROM aportaciones_objetivos
+         WHERE usuario_id = :usuario_aportaciones
+
+         UNION ALL
+
+         SELECT fecha
+         FROM inversiones
+         WHERE usuario_id = :usuario_inversiones
+
+         UNION ALL
+
+         SELECT mb.fecha
+         FROM movimientos_bancos mb
+         INNER JOIN bancos b ON b.id = mb.banco_id
+         WHERE b.usuario_id = :usuario_movimientos
+     ) actividad
+     ORDER BY periodo DESC'
+);
+$consultaPeriodosConRegistros->execute([
+    'usuario_registros' => $usuarioId,
+    'usuario_aportaciones' => $usuarioId,
+    'usuario_inversiones' => $usuarioId,
+    'usuario_movimientos' => $usuarioId
+]);
+$periodosMensualesResumen = $consultaPeriodosConRegistros->fetchAll(PDO::FETCH_COLUMN);
+$aniosConRegistrosResumen = array_values(array_unique(array_map(
+    static fn(string $periodo): string => substr($periodo, 0, 4),
+    $periodosMensualesResumen
+)));
+
+$anioActualResumen = (int) date('Y');
+$periodoResumen = $_GET['periodo'] ?? '';
+
+if ($rangoResumen === 'anual') {
+    $anioSolicitado = is_string($periodoResumen)
+        ? $periodoResumen
+        : '';
+
+    if (!in_array($anioSolicitado, $aniosConRegistrosResumen, true)) {
+        $anioActualTexto = (string) $anioActualResumen;
+        $periodoResumen = in_array(
+            $anioActualTexto,
+            $aniosConRegistrosResumen,
+            true
+        )
+            ? $anioActualTexto
+            : ($aniosConRegistrosResumen[0] ?? $anioActualTexto);
+    } else {
+        $periodoResumen = $anioSolicitado;
+    }
+
+    $fechaInicioResumen = $periodoResumen . '-01-01';
+    $fechaFinResumen = ((int) $periodoResumen + 1) . '-01-01';
+    $etiquetaPeriodoResumen = $periodoResumen;
+} else {
+    $periodoSolicitado = is_string($periodoResumen)
+        ? $periodoResumen
+        : '';
+
+    if (!in_array($periodoSolicitado, $periodosMensualesResumen, true)) {
+        $periodoActual = date('Y-m');
+        $periodoResumen = in_array(
+            $periodoActual,
+            $periodosMensualesResumen,
+            true
+        )
+            ? $periodoActual
+            : ($periodosMensualesResumen[0] ?? $periodoActual);
+    } else {
+        $periodoResumen = $periodoSolicitado;
+    }
+
+    $fechaInicioResumen = $periodoResumen . '-01';
+    $fechaFinResumen = (new DateTimeImmutable($fechaInicioResumen))
+        ->modify('first day of next month')
+        ->format('Y-m-d');
+
+    $nombresMesesResumen = [
+        1 => 'enero',
+        2 => 'febrero',
+        3 => 'marzo',
+        4 => 'abril',
+        5 => 'mayo',
+        6 => 'junio',
+        7 => 'julio',
+        8 => 'agosto',
+        9 => 'septiembre',
+        10 => 'octubre',
+        11 => 'noviembre',
+        12 => 'diciembre'
+    ];
+    $partesPeriodo = explode('-', $periodoResumen);
+    $etiquetaPeriodoResumen = ucfirst(
+        $nombresMesesResumen[(int) $partesPeriodo[1]]
+    ) . ' de ' . $partesPeriodo[0];
+}
+
+$periodosMensualesJson = json_encode(
+    $periodosMensualesResumen,
+    JSON_THROW_ON_ERROR
+);
+$aniosConRegistrosJson = json_encode(
+    $aniosConRegistrosResumen,
+    JSON_THROW_ON_ERROR
+);
+
+$consultaTotalesOperaciones = $conexion->prepare(
+    'SELECT
+        COALESCE(SUM(CASE WHEN tipo = "ingreso" THEN importe ELSE 0 END), 0)
+            AS ingresos,
+        COALESCE(SUM(CASE WHEN tipo = "gasto" THEN importe ELSE 0 END), 0)
+            AS gastos
+     FROM registros
+     WHERE usuario_id = :usuario_id
+       AND fecha >= :fecha_inicio
+       AND fecha < :fecha_fin'
+);
+$consultaTotalesOperaciones->execute([
+    'usuario_id' => $usuarioId,
+    'fecha_inicio' => $fechaInicioResumen,
+    'fecha_fin' => $fechaFinResumen
+]);
+$totalesOperacionesResumen = $consultaTotalesOperaciones->fetch(PDO::FETCH_ASSOC);
+$ingresosPeriodoResumen = (float) $totalesOperacionesResumen['ingresos'];
+$gastosPeriodoResumen = (float) $totalesOperacionesResumen['gastos'];
+$balancePeriodoResumen = $ingresosPeriodoResumen - $gastosPeriodoResumen;
+
+$consultaCategoriasPeriodo = $conexion->prepare(
+    'SELECT c.nombre, SUM(r.importe) AS importe
+     FROM registros r
+     INNER JOIN categorias c ON c.id = r.categoria_id
+     WHERE r.usuario_id = :usuario_id
+       AND r.tipo = :tipo
+       AND r.fecha >= :fecha_inicio
+       AND r.fecha < :fecha_fin
+     GROUP BY c.id, c.nombre
+     ORDER BY importe DESC, c.nombre ASC'
+);
+
+$categoriasIngresosResumen = [];
+$categoriasGastosResumen = [];
+$coloresPorTipoResumen = [
+    'ingreso' => ['#16a34a', '#0891b2', '#2563eb', '#7c3aed', '#0f766e', '#65a30d'],
+    'gasto' => ['#dc2626', '#ea580c', '#d97706', '#db2777', '#9333ea', '#b45309']
+];
+
+foreach (['ingreso', 'gasto'] as $tipoCategoriaResumen) {
+    $consultaCategoriasPeriodo->execute([
+        'usuario_id' => $usuarioId,
+        'tipo' => $tipoCategoriaResumen,
+        'fecha_inicio' => $fechaInicioResumen,
+        'fecha_fin' => $fechaFinResumen
+    ]);
+
+    $categoriasPeriodo = $consultaCategoriasPeriodo->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($categoriasPeriodo as $indiceCategoria => &$categoriaPeriodo) {
+        $categoriaPeriodo['importe'] = (float) $categoriaPeriodo['importe'];
+        $categoriaPeriodo['color'] = $coloresPorTipoResumen[$tipoCategoriaResumen][
+            $indiceCategoria % count($coloresPorTipoResumen[$tipoCategoriaResumen])
+        ];
+    }
+    unset($categoriaPeriodo);
+
+    if ($tipoCategoriaResumen === 'ingreso') {
+        $categoriasIngresosResumen = $categoriasPeriodo;
+    } else {
+        $categoriasGastosResumen = $categoriasPeriodo;
+    }
+}
+
+$consultaSaldoBancos = $conexion->prepare(
+    'SELECT COALESCE(SUM(b.saldo_inicial + COALESCE(m.saldo, 0)), 0)
+     FROM bancos b
+     LEFT JOIN (
+         SELECT banco_id, SUM(importe) AS saldo
+         FROM movimientos_bancos
+         GROUP BY banco_id
+     ) m ON m.banco_id = b.id
+     WHERE b.usuario_id = :usuario_id'
+);
+$consultaSaldoBancos->execute(['usuario_id' => $usuarioId]);
+$saldoBancosResumen = (float) $consultaSaldoBancos->fetchColumn();
+
+$consultaAhorroActual = $conexion->prepare(
+    'SELECT COALESCE(SUM(saldo_actual), 0)
+     FROM objetivos
+     WHERE usuario_id = :usuario_id'
+);
+$consultaAhorroActual->execute(['usuario_id' => $usuarioId]);
+$ahorroActualResumen = (float) $consultaAhorroActual->fetchColumn();
+
+$consultaAhorroPeriodo = $conexion->prepare(
+    'SELECT COALESCE(SUM(importe), 0)
+     FROM aportaciones_objetivos
+     WHERE usuario_id = :usuario_id
+       AND fecha >= :fecha_inicio
+       AND fecha < :fecha_fin'
+);
+$consultaAhorroPeriodo->execute([
+    'usuario_id' => $usuarioId,
+    'fecha_inicio' => $fechaInicioResumen,
+    'fecha_fin' => $fechaFinResumen
+]);
+$ahorroPeriodoResumen = (float) $consultaAhorroPeriodo->fetchColumn();
+
+$consultaInversionActual = $conexion->prepare(
+    'SELECT COALESCE(SUM(importe), 0)
+     FROM inversiones
+     WHERE usuario_id = :usuario_id'
+);
+$consultaInversionActual->execute(['usuario_id' => $usuarioId]);
+$inversionActualResumen = (float) $consultaInversionActual->fetchColumn();
+
+$consultaInversionPeriodo = $conexion->prepare(
+    'SELECT COALESCE(SUM(importe), 0)
+     FROM inversiones
+     WHERE usuario_id = :usuario_id
+       AND fecha >= :fecha_inicio
+       AND fecha < :fecha_fin'
+);
+$consultaInversionPeriodo->execute([
+    'usuario_id' => $usuarioId,
+    'fecha_inicio' => $fechaInicioResumen,
+    'fecha_fin' => $fechaFinResumen
+]);
+$inversionPeriodoResumen = (float) $consultaInversionPeriodo->fetchColumn();
+
+function formatearEurosResumen(float $importe): string
+{
+    return number_format($importe, 2, ',', '.') . ' €';
+}
+
+function formatearCambioPeriodoResumen(float $importe): string
+{
+    $signo = $importe > 0 ? '+' : ($importe < 0 ? '-' : '');
+
+    return $signo . number_format(abs($importe), 2, ',', '.') . ' €';
+}
+
+/*
+|--------------------------------------------------------------------------
 | Obtener las categorías del usuario
 |--------------------------------------------------------------------------
 */
@@ -108,15 +369,21 @@ unset($_SESSION['mensaje_resumen']);
                 <label for="filtro-rango">Rango</label>
 
                 <select id="filtro-rango" name="filtro-rango">
-                    <option value="mensual">Mensual</option>
-                    <option value="anual">Anual</option>
+                    <option value="mensual" <?= $rangoResumen === 'mensual' ? 'selected' : '' ?>>Mensual</option>
+                    <option value="anual" <?= $rangoResumen === 'anual' ? 'selected' : '' ?>>Anual</option>
                 </select>
             </div>
 
             <div class="resumen-filtro">
                 <label for="filtro-periodo">Período</label>
 
-                <select id="filtro-periodo" name="filtro-periodo"></select>
+                <select
+                    id="filtro-periodo"
+                    name="filtro-periodo"
+                    data-periodos-mensuales="<?= htmlspecialchars($periodosMensualesJson, ENT_QUOTES, 'UTF-8') ?>"
+                    data-anios="<?= htmlspecialchars($aniosConRegistrosJson, ENT_QUOTES, 'UTF-8') ?>"
+                    data-periodo-seleccionado="<?= htmlspecialchars($periodoResumen, ENT_QUOTES, 'UTF-8') ?>"
+                ></select>
             </div>
 
         </div>
@@ -393,7 +660,170 @@ unset($_SESSION['mensaje_resumen']);
 
     </div>
 
-    <!-- El contenido del resumen se implementará posteriormente -->
-    <div class="resumen-contenido"></div>
+    <div class="resumen-contenido">
+        <section class="resumen-grupo" aria-labelledby="resumen-operaciones-titulo">
+            <h2 id="resumen-operaciones-titulo">
+                Operaciones de <?= htmlspecialchars($etiquetaPeriodoResumen, ENT_QUOTES, 'UTF-8') ?>
+            </h2>
+
+            <div class="resumen-tarjetas">
+                <article class="resumen-tarjeta resumen-tarjeta-ingresos">
+                    <div class="resumen-tarjeta-icono" aria-hidden="true">
+                        <i class="bi bi-arrow-down-left"></i>
+                    </div>
+                    <h3>Ingresos totales</h3>
+                    <p class="resumen-tarjeta-importe<?= $ingresosPeriodoResumen > 0 ? ' resumen-importe-positivo' : '' ?>">
+                        <?= formatearEurosResumen($ingresosPeriodoResumen) ?>
+                    </p>
+                </article>
+
+                <article class="resumen-tarjeta resumen-tarjeta-gastos">
+                    <div class="resumen-tarjeta-icono" aria-hidden="true">
+                        <i class="bi bi-arrow-up-right"></i>
+                    </div>
+                    <h3>Gastos totales</h3>
+                    <p class="resumen-tarjeta-importe">
+                        <?= formatearEurosResumen($gastosPeriodoResumen) ?>
+                    </p>
+                </article>
+
+                <article class="resumen-tarjeta resumen-tarjeta-balance">
+                    <div class="resumen-tarjeta-icono" aria-hidden="true">
+                        <i class="bi bi-calculator"></i>
+                    </div>
+                    <h3>Balance</h3>
+                    <p class="resumen-tarjeta-importe <?= $balancePeriodoResumen > 0 ? 'resumen-importe-positivo' : ($balancePeriodoResumen < 0 ? 'resumen-importe-negativo' : 'resumen-importe-neutro') ?>">
+                        <?= formatearEurosResumen($balancePeriodoResumen) ?>
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="resumen-grupo" aria-labelledby="resumen-patrimonio-titulo">
+            <h2 id="resumen-patrimonio-titulo">Patrimonio</h2>
+
+            <div class="resumen-tarjetas">
+                <article class="resumen-tarjeta resumen-tarjeta-cuentas">
+                    <div class="resumen-tarjeta-icono" aria-hidden="true">
+                        <i class="bi bi-bank"></i>
+                    </div>
+                    <h3>Saldo en cuentas</h3>
+                    <p class="resumen-tarjeta-importe">
+                        <?= formatearEurosResumen($saldoBancosResumen) ?>
+                    </p>
+                </article>
+
+                <article class="resumen-tarjeta resumen-tarjeta-ahorro">
+                    <div class="resumen-tarjeta-icono" aria-hidden="true">
+                        <i class="bi bi-piggy-bank"></i>
+                    </div>
+                    <h3>Ahorro</h3>
+                    <p class="resumen-tarjeta-importe">
+                        <?= formatearEurosResumen($ahorroActualResumen) ?>
+                    </p>
+                    <p class="resumen-tarjeta-periodo">
+                        <strong class="<?= $ahorroPeriodoResumen > 0 ? 'resumen-variacion-positiva' : ($ahorroPeriodoResumen < 0 ? 'resumen-variacion-negativa' : 'resumen-variacion-neutra') ?>">
+                            <?= formatearCambioPeriodoResumen($ahorroPeriodoResumen) ?>
+                        </strong> en este periodo
+                    </p>
+                </article>
+
+                <article class="resumen-tarjeta resumen-tarjeta-inversion">
+                    <div class="resumen-tarjeta-icono" aria-hidden="true">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <h3>Invertido</h3>
+                    <p class="resumen-tarjeta-importe">
+                        <?= formatearEurosResumen($inversionActualResumen) ?>
+                    </p>
+                    <p class="resumen-tarjeta-periodo">
+                        <strong class="<?= $inversionPeriodoResumen > 0 ? 'resumen-variacion-positiva' : ($inversionPeriodoResumen < 0 ? 'resumen-variacion-negativa' : 'resumen-variacion-neutra') ?>">
+                            <?= formatearCambioPeriodoResumen($inversionPeriodoResumen) ?>
+                        </strong> en este periodo
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="resumen-grupo" aria-labelledby="resumen-categorias-titulo">
+            <h2 id="resumen-categorias-titulo">
+                Ingresos y gastos por categoría de <?= htmlspecialchars($etiquetaPeriodoResumen, ENT_QUOTES, 'UTF-8') ?>
+            </h2>
+
+            <div class="resumen-graficos">
+                <article class="resumen-grafico-tarjeta">
+                    <h3>Ingresos por categoría</h3>
+
+                    <div class="resumen-grafico-contenido">
+                        <canvas
+                            class="resumen-grafico-circular"
+                            data-categorias="<?= htmlspecialchars(
+                                json_encode($categoriasIngresosResumen, JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
+                            role="img"
+                            aria-label="Gráfico circular de ingresos por categoría"
+                        ></canvas>
+
+                        <?php if ($categoriasIngresosResumen): ?>
+                            <ul class="resumen-grafico-leyenda">
+                                <?php foreach ($categoriasIngresosResumen as $categoria): ?>
+                                    <li>
+                                        <span
+                                            class="resumen-grafico-indicador"
+                                            style="--categoria-color: <?= htmlspecialchars($categoria['color'], ENT_QUOTES, 'UTF-8') ?>"
+                                            aria-hidden="true"
+                                        ></span>
+                                        <span class="resumen-grafico-nombre">
+                                            <?= htmlspecialchars($categoria['nombre'], ENT_QUOTES, 'UTF-8') ?>
+                                        </span>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php else: ?>
+                            <p class="resumen-grafico-vacio">No hay ingresos en este periodo.</p>
+                        <?php endif; ?>
+                    </div>
+                </article>
+
+                <article class="resumen-grafico-tarjeta">
+                    <h3>Gastos por categoría</h3>
+
+                    <div class="resumen-grafico-contenido">
+                        <canvas
+                            class="resumen-grafico-circular"
+                            data-categorias="<?= htmlspecialchars(
+                                json_encode($categoriasGastosResumen, JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
+                            role="img"
+                            aria-label="Gráfico circular de gastos por categoría"
+                        ></canvas>
+
+                        <?php if ($categoriasGastosResumen): ?>
+                            <ul class="resumen-grafico-leyenda">
+                                <?php foreach ($categoriasGastosResumen as $categoria): ?>
+                                    <li>
+                                        <span
+                                            class="resumen-grafico-indicador"
+                                            style="--categoria-color: <?= htmlspecialchars($categoria['color'], ENT_QUOTES, 'UTF-8') ?>"
+                                            aria-hidden="true"
+                                        ></span>
+                                        <span class="resumen-grafico-nombre">
+                                            <?= htmlspecialchars($categoria['nombre'], ENT_QUOTES, 'UTF-8') ?>
+                                        </span>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php else: ?>
+                            <p class="resumen-grafico-vacio">No hay gastos en este periodo.</p>
+                        <?php endif; ?>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </div>
 
 </div>

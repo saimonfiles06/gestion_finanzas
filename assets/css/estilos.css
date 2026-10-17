@@ -2277,3 +2277,327 @@ a {
     color: var(--texto, #172033);
     line-height: 1.5;
 }
+
+/* Tarjetas de operaciones y patrimonio */
+
+.resumen-contenido {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.resumen-grupo h2 {
+    margin: 0 0 16px;
+    color: var(--color-texto, #172033);
+    font-size: 1.15rem;
+}
+
+.resumen-tarjetas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.resumen-tarjeta {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--color-borde, #dce3ed);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 18px rgb(23 32 51 / 5%);
+}
+
+.resumen-tarjeta-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    background: #eaf0ff;
+    color: var(--color-principal, #2463eb);
+    font-size: 1.2rem;
+}
+
+.resumen-tarjeta h3 {
+    margin: 0 0 8px;
+    color: var(--color-secundario, #687386);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.resumen-tarjeta-importe {
+    margin: 0;
+    color: var(--color-texto, #172033);
+    font-size: clamp(1.35rem, 2.5vw, 1.8rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+
+.resumen-tarjeta-importe.resumen-importe-positivo {
+    color: #15803d;
+}
+
+.resumen-tarjeta-importe.resumen-importe-negativo {
+    color: #c2413a;
+}
+
+.resumen-tarjeta-importe.resumen-importe-neutro {
+    color: #172033;
+}
+
+.resumen-tarjeta-periodo {
+    margin: 12px 0 0;
+    color: var(--color-secundario, #687386);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.resumen-tarjeta-periodo strong {
+    color: var(--color-texto, #172033);
+    font-variant-numeric: tabular-nums;
+}
+
+.resumen-tarjeta-periodo strong.resumen-variacion-positiva {
+    color: #15803d;
+}
+
+.resumen-tarjeta-periodo strong.resumen-variacion-negativa {
+    color: #c2413a;
+}
+
+.resumen-tarjeta-periodo strong.resumen-variacion-neutra {
+    color: var(--color-secundario, #687386);
+}
+
+.resumen-tarjeta-ingresos .resumen-tarjeta-icono {
+    background: #e9f8ef;
+    color: #15803d;
+}
+
+.resumen-tarjeta-gastos .resumen-tarjeta-icono {
+    background: #fff0ee;
+    color: #c2413a;
+}
+
+.resumen-tarjeta-balance .resumen-tarjeta-icono {
+    background: #edf3ff;
+}
+
+.modo-oscuro .resumen-tarjeta {
+    border-color: var(--color-borde, #374151);
+    background: #1f2937;
+}
+
+.modo-oscuro .resumen-tarjeta-ingresos .resumen-tarjeta-icono {
+    background: #183b28;
+    color: #86efac;
+}
+
+.modo-oscuro .resumen-tarjeta-gastos .resumen-tarjeta-icono {
+    background: #482525;
+    color: #fda29b;
+}
+
+.modo-oscuro .resumen-tarjeta-balance .resumen-tarjeta-icono,
+.modo-oscuro .resumen-tarjeta-cuentas .resumen-tarjeta-icono,
+.modo-oscuro .resumen-tarjeta-ahorro .resumen-tarjeta-icono,
+.modo-oscuro .resumen-tarjeta-inversion .resumen-tarjeta-icono {
+    background: #263a60;
+    color: #a9c4ff;
+}
+
+.modo-oscuro .resumen-tarjeta-periodo strong.resumen-variacion-positiva {
+    color: #86efac;
+}
+
+.modo-oscuro .resumen-tarjeta-periodo strong.resumen-variacion-negativa {
+    color: #fda29b;
+}
+
+.modo-oscuro .resumen-tarjeta-importe.resumen-importe-positivo {
+    color: #86efac;
+}
+
+.modo-oscuro .resumen-tarjeta-importe.resumen-importe-negativo {
+    color: #fda29b;
+}
+
+.modo-oscuro .resumen-tarjeta-importe.resumen-importe-neutro {
+    color: #f3f4f6;
+}
+
+/* Formulario de registros y filtros en modo oscuro */
+
+.modo-oscuro .resumen-filtro label,
+.modo-oscuro .campo-registro label {
+    color: var(--color-texto, #f3f4f6);
+}
+
+.modo-oscuro .resumen-filtro select,
+.modo-oscuro .campo-registro input,
+.modo-oscuro .campo-registro select,
+.modo-oscuro .campo-registro textarea {
+    border-color: var(--color-borde, #374151);
+    background-color: #1f2937;
+    color: var(--color-texto, #f3f4f6);
+    color-scheme: dark;
+}
+
+.modo-oscuro .resumen-filtro select option,
+.modo-oscuro .campo-registro select option {
+    background-color: #1f2937;
+    color: #f3f4f6;
+}
+
+.modo-oscuro .resumen-filtro select option:disabled {
+    color: #8792a3;
+}
+
+.modo-oscuro .resumen-filtro select:focus,
+.modo-oscuro .campo-registro input:focus,
+.modo-oscuro .campo-registro select:focus,
+.modo-oscuro .campo-registro textarea:focus {
+    outline-color: #93b4ff;
+}
+
+.modo-oscuro .resumen-filtro select:disabled,
+.modo-oscuro .campo-registro input:disabled,
+.modo-oscuro .campo-registro select:disabled {
+    border-color: #303b4b;
+    background-color: #18212f;
+    color: #8792a3;
+}
+
+.modo-oscuro .campo-registro input::placeholder,
+.modo-oscuro .campo-registro textarea::placeholder {
+    color: #8792a3;
+    opacity: 1;
+}
+
+.modo-oscuro .panel-crear-registro {
+    border-color: var(--color-borde, #374151);
+    background: #1f2937;
+    box-shadow: 0 4px 18px rgb(0 0 0 / 18%);
+}
+
+.modo-oscuro .formulario-registro-encabezado h3 {
+    color: var(--color-texto, #f3f4f6);
+}
+
+.modo-oscuro .formulario-registro-encabezado p,
+.modo-oscuro .ayuda-campo {
+    color: var(--color-secundario, #a8b2c3);
+}
+
+.modo-oscuro .btn-cerrar-registro,
+.modo-oscuro .btn-secundario {
+    border-color: var(--color-borde, #374151);
+    background: #273449;
+    color: var(--color-texto, #f3f4f6);
+}
+
+.modo-oscuro .btn-cerrar-registro:hover,
+.modo-oscuro .btn-secundario:hover {
+    background: #34445b;
+}
+
+.modo-oscuro .formulario-registro-acciones {
+    border-color: var(--color-borde, #374151);
+}
+
+.modo-oscuro .mensaje-registro {
+    border-color: var(--color-borde, #374151);
+    background: #1f2937;
+    color: var(--color-texto, #f3f4f6);
+}
+
+/* Gráficos de ingresos y gastos por categoría */
+
+.resumen-graficos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.resumen-grafico-tarjeta {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--color-borde, #dce3ed);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 18px rgb(23 32 51 / 5%);
+}
+
+.resumen-grafico-tarjeta h3 {
+    margin: 0 0 18px;
+    color: var(--color-texto, #172033);
+    font-size: 1rem;
+}
+
+.resumen-grafico-contenido {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-width: 0;
+}
+
+.resumen-grafico-circular {
+    display: block;
+    flex: 0 0 180px;
+    width: 180px;
+    height: 180px;
+}
+
+.resumen-grafico-leyenda {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    max-height: 220px;
+    margin: 0;
+    padding: 0 6px 0 0;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.resumen-grafico-leyenda li {
+    display: grid;
+    grid-template-columns: 12px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: var(--color-texto, #172033);
+    font-size: 0.82rem;
+}
+
+.resumen-grafico-indicador {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--categoria-color);
+}
+
+.resumen-grafico-nombre {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.resumen-grafico-vacio {
+    margin: 0;
+    color: var(--color-secundario, #687386);
+    font-size: 0.88rem;
+}
+
+.modo-oscuro .resumen-grafico-tarjeta {
+    border-color: var(--color-borde, #374151);
+    background: #1f2937;
+}
+
+.modo-oscuro .resumen-grafico-leyenda li {
+    color: var(--color-texto, #f3f4f6);
+}

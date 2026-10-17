@@ -203,6 +203,14 @@ window.editarCategoria = (categoriaId, nombreActual, tipo) => {
 
     const filtroRango = document.getElementById('filtro-rango');
     const filtroPeriodo = document.getElementById('filtro-periodo');
+    const periodosMensuales = JSON.parse(
+        filtroPeriodo.dataset.periodosMensuales || '[]'
+    );
+    const aniosConRegistros = JSON.parse(
+        filtroPeriodo.dataset.anios || '[]'
+    );
+    const periodosMensualesSet = new Set(periodosMensuales);
+    const periodoInicial = filtroPeriodo.dataset.periodoSeleccionado || '';
 
     if (
         !botonCrear ||
@@ -444,16 +452,20 @@ window.editarCategoria = (categoriaId, nombreActual, tipo) => {
 
     /*
     |--------------------------------------------------------------------------
-    | Filtros de período: solo presentación visual
+    | Filtros del periodo de las métricas del resumen
     |--------------------------------------------------------------------------
     */
 
     function actualizarPeriodos() {
         const rango = filtroRango.value;
-        const fechaActual = new Date();
-        const anioActual = fechaActual.getFullYear();
+        const parametrosURL = new URLSearchParams(window.location.search);
+        const rangoURL = parametrosURL.get('rango');
+        const periodoURL = rangoURL === rango
+            ? parametrosURL.get('periodo')
+            : periodoInicial;
 
         filtroPeriodo.innerHTML = '';
+        filtroPeriodo.disabled = false;
 
         if (rango === 'mensual') {
             const meses = [
@@ -462,35 +474,80 @@ window.editarCategoria = (categoriaId, nombreActual, tipo) => {
                 'septiembre', 'octubre', 'noviembre', 'diciembre'
             ];
 
-            meses.forEach(function (mes, indice) {
-                const opcion = document.createElement('option');
+            if (periodosMensuales.length === 0) {
+                agregarOpcionSinRegistros();
+            } else {
+                const anios = [...aniosConRegistros].sort().reverse();
 
-                opcion.value =
-                    anioActual + '-' + String(indice + 1).padStart(2, '0');
-
-                opcion.textContent =
-                    mes.charAt(0).toUpperCase() + mes.slice(1) +
-                    ' de ' + anioActual;
-
-                if (indice === fechaActual.getMonth()) {
-                    opcion.selected = true;
-                }
-
-                filtroPeriodo.appendChild(opcion);
-            });
+                anios.forEach(function (anio) {
+                    meses.forEach(function (mes, indice) {
+                        const periodo = anio + '-' +
+                            String(indice + 1).padStart(2, '0');
+                        const opcion = document.createElement('option');
+                        opcion.value = periodo;
+                        opcion.textContent =
+                            mes.charAt(0).toUpperCase() + mes.slice(1) +
+                            ' de ' + anio;
+                        opcion.disabled = !periodosMensualesSet.has(periodo);
+                        opcion.selected = periodo === periodoURL;
+                        filtroPeriodo.appendChild(opcion);
+                    });
+                });
+                seleccionarPeriodoDisponible(periodoURL, periodosMensuales);
+            }
         } else {
-            for (let anio = anioActual; anio >= anioActual - 4; anio--) {
-                const opcion = document.createElement('option');
+            if (aniosConRegistros.length === 0) {
+                agregarOpcionSinRegistros();
+            } else {
+                const anios = [...aniosConRegistros].sort().reverse();
 
-                opcion.value = String(anio);
-                opcion.textContent = String(anio);
+                anios.forEach(function (anio) {
+                    const opcion = document.createElement('option');
+                    opcion.value = anio;
+                    opcion.textContent = anio;
+                    opcion.selected = anio === periodoURL;
+                    filtroPeriodo.appendChild(opcion);
+                });
+                seleccionarPeriodoDisponible(periodoURL, anios);
+            }
+        }
 
-                filtroPeriodo.appendChild(opcion);
+        function agregarOpcionSinRegistros() {
+            const opcion = document.createElement('option');
+            opcion.value = '';
+            opcion.textContent = 'No hay periodos con registros';
+            opcion.disabled = true;
+            opcion.selected = true;
+            filtroPeriodo.appendChild(opcion);
+            filtroPeriodo.disabled = true;
+        }
+
+        function seleccionarPeriodoDisponible(periodoPreferido, periodosDisponibles) {
+            if (periodosDisponibles.includes(periodoPreferido)) {
+                filtroPeriodo.value = periodoPreferido;
+            } else {
+                filtroPeriodo.value = periodosDisponibles[0];
             }
         }
     }
 
-    filtroRango.addEventListener('change', actualizarPeriodos);
+    function navegarAlPeriodoSeleccionado() {
+        const url = new URL(window.location.href);
+        url.searchParams.set('seccion', 'resumen');
+        url.searchParams.set('rango', filtroRango.value);
+        if (filtroPeriodo.value) {
+            url.searchParams.set('periodo', filtroPeriodo.value);
+        } else {
+            url.searchParams.delete('periodo');
+        }
+        window.location.assign(url.toString());
+    }
+
+    filtroRango.addEventListener('change', function () {
+        actualizarPeriodos();
+        navegarAlPeriodoSeleccionado();
+    });
+    filtroPeriodo.addEventListener('change', navegarAlPeriodoSeleccionado);
 
     /*
     |--------------------------------------------------------------------------
@@ -526,4 +583,91 @@ window.editarCategoria = (categoriaId, nombreActual, tipo) => {
 
     actualizarFormulario();
     actualizarPeriodos();
+})();
+
+(function () {
+    const graficos = document.querySelectorAll('.resumen-grafico-circular');
+
+    if (graficos.length === 0) {
+        return;
+    }
+
+    function dibujarGrafico(canvas) {
+        const ancho = canvas.clientWidth;
+        const alto = canvas.clientHeight;
+
+        if (ancho === 0 || alto === 0) {
+            return;
+        }
+
+        const escala = window.devicePixelRatio || 1;
+        canvas.width = Math.round(ancho * escala);
+        canvas.height = Math.round(alto * escala);
+
+        const contexto = canvas.getContext('2d');
+        if (!contexto) {
+            return;
+        }
+
+        contexto.setTransform(escala, 0, 0, escala, 0, 0);
+        contexto.clearRect(0, 0, ancho, alto);
+
+        const centroX = ancho / 2;
+        const centroY = alto / 2;
+        const radio = Math.min(ancho, alto) / 2 - 2;
+        const categorias = JSON.parse(canvas.dataset.categorias || '[]');
+        const total = categorias.reduce(
+            (suma, categoria) => suma + Number(categoria.importe),
+            0
+        );
+
+        if (total <= 0) {
+            contexto.beginPath();
+            contexto.arc(centroX, centroY, radio, 0, Math.PI * 2);
+            contexto.fillStyle = document.body.classList.contains('modo-oscuro')
+                ? '#374151'
+                : '#e5e7eb';
+            contexto.fill();
+            return;
+        }
+
+        let anguloInicial = -Math.PI / 2;
+
+        categorias.forEach((categoria) => {
+            const anguloFinal = anguloInicial +
+                Number(categoria.importe) / total * Math.PI * 2;
+
+            contexto.beginPath();
+            contexto.moveTo(centroX, centroY);
+            contexto.arc(
+                centroX,
+                centroY,
+                radio,
+                anguloInicial,
+                anguloFinal
+            );
+            contexto.closePath();
+            contexto.fillStyle = categoria.color;
+            contexto.fill();
+
+            anguloInicial = anguloFinal;
+        });
+    }
+
+    const observadorTamano = new ResizeObserver((entradas) => {
+        entradas.forEach((entrada) => dibujarGrafico(entrada.target));
+    });
+
+    graficos.forEach((grafico) => {
+        observadorTamano.observe(grafico);
+        dibujarGrafico(grafico);
+    });
+
+    const observadorModo = new MutationObserver(() => {
+        graficos.forEach(dibujarGrafico);
+    });
+    observadorModo.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
 })();
