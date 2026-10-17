@@ -81,6 +81,9 @@ if (empty($_SESSION['csrf_token'])) {
 }
 
 $tokenCsrfResumen = $_SESSION['csrf_token'];
+
+$mensajeResumen = $_SESSION['mensaje_resumen'] ?? '';
+unset($_SESSION['mensaje_resumen']);
 ?>
 
 <div class="resumen-contenedor">
@@ -126,8 +129,8 @@ $tokenCsrfResumen = $_SESSION['csrf_token'];
         class="mensaje-registro"
         role="status"
         aria-live="polite"
-        hidden
-    ></p>
+        <?= $mensajeResumen === '' ? 'hidden' : '' ?>
+    ><?= htmlspecialchars($mensajeResumen, ENT_QUOTES, 'UTF-8') ?></p>
 
     <!-- Formulario de creación -->
     <div
@@ -154,7 +157,7 @@ $tokenCsrfResumen = $_SESSION['csrf_token'];
             </button>
         </div>
 
-        <form id="form-crear-registro" autocomplete="off">
+        <form id="form-crear-registro" action="guardar_registro.php" method="POST" autocomplete="off">
 
             <input
                 type="hidden"
@@ -361,7 +364,7 @@ $tokenCsrfResumen = $_SESSION['csrf_token'];
                         id="observaciones-registro"
                         name="descripcion"
                         rows="3"
-                        maxlength="1000"
+                        maxlength="255"
                         placeholder="Añade observaciones si lo necesitas..."
                         disabled
                     ></textarea>
@@ -396,355 +399,5 @@ $tokenCsrfResumen = $_SESSION['csrf_token'];
 </div>
 
 <script>
-(function () {
-    const botonCrear = document.getElementById('btn-crear-registro');
-    const botonCerrar = document.getElementById('btn-cerrar-registro');
-    const botonCancelar = document.getElementById('btn-cancelar-registro');
 
-    const panel = document.getElementById('panel-crear-registro');
-    const formulario = document.getElementById('form-crear-registro');
-
-    const tipoRegistro = document.getElementById('tipo-registro');
-    const fechaRegistro = document.getElementById('fecha-registro');
-    const cantidadRegistro = document.getElementById('cantidad-registro');
-
-    const categoriaRegistro = document.getElementById('categoria-registro');
-    const objetivoRegistro = document.getElementById('objetivo-registro');
-    const bancoRegistro = document.getElementById('banco-registro');
-
-    const bancoOrigen = document.getElementById('banco-origen-traspaso');
-    const bancoDestino = document.getElementById('banco-destino-traspaso');
-
-    const observaciones = document.getElementById('observaciones-registro');
-    const ayudaCategoria = document.getElementById('ayuda-categoria-registro');
-    const ayudaTraspaso = document.getElementById('ayuda-traspaso');
-
-    const mensaje = document.getElementById('mensaje-registro');
-    const descripcionFormulario = document.getElementById('descripcion-formulario-registro');
-
-    const filtroRango = document.getElementById('filtro-rango');
-    const filtroPeriodo = document.getElementById('filtro-periodo');
-
-    if (
-        !botonCrear ||
-        !panel ||
-        !formulario ||
-        formulario.dataset.inicializado === 'true'
-    ) {
-        return;
-    }
-
-    formulario.dataset.inicializado = 'true';
-
-    const grupos = Array.from(
-        formulario.querySelectorAll('[data-grupo]')
-    );
-
-    /*
-    |--------------------------------------------------------------------------
-    | Mostrar y ocultar grupos
-    |--------------------------------------------------------------------------
-    */
-
-    function mostrarGrupo(nombre, visible) {
-        grupos.forEach(function (grupo) {
-            if (grupo.dataset.grupo !== nombre) {
-                return;
-            }
-
-            grupo.hidden = !visible;
-
-            grupo.querySelectorAll('input, select, textarea').forEach(function (campo) {
-                campo.disabled = !visible;
-
-                if (campo.name !== 'descripcion') {
-                    campo.required = visible;
-                }
-            });
-        });
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Actualizar los campos según el tipo
-    |--------------------------------------------------------------------------
-    */
-
-    function actualizarFormulario() {
-        const tipo = tipoRegistro.value;
-
-        // Ocultar todos los campos específicos antes de mostrar los necesarios.
-        mostrarGrupo('comun', Boolean(tipo));
-        mostrarGrupo('categoria', false);
-        mostrarGrupo('objetivo', false);
-        mostrarGrupo('banco', false);
-        mostrarGrupo('traspaso', false);
-        mostrarGrupo('notas', Boolean(tipo));
-
-        ayudaCategoria.textContent = '';
-        ayudaTraspaso.textContent =
-            'Las cuentas de origen y destino deben ser distintas.';
-
-        categoriaRegistro.value = '';
-        objetivoRegistro.value = '';
-        bancoRegistro.value = '';
-        bancoOrigen.value = '';
-        bancoDestino.value = '';
-
-        if (!tipo) {
-            descripcionFormulario.textContent =
-                'Selecciona el tipo de registro e introduce sus datos.';
-            return;
-        }
-
-        switch (tipo) {
-            case 'ingreso':
-                mostrarGrupo('categoria', true);
-                mostrarGrupo('banco', true);
-
-                descripcionFormulario.textContent =
-                    'Registra un ingreso en una de tus cuentas.';
-                actualizarCategorias('ingreso');
-                break;
-
-            case 'gasto':
-                mostrarGrupo('categoria', true);
-                mostrarGrupo('banco', true);
-
-                descripcionFormulario.textContent =
-                    'Registra un gasto realizado desde una de tus cuentas.';
-                actualizarCategorias('gasto');
-                break;
-
-            case 'ahorro':
-                mostrarGrupo('objetivo', true);
-                mostrarGrupo('banco', true);
-
-                descripcionFormulario.textContent =
-                    'Asocia una cantidad de ahorro a uno de tus objetivos.';
-                break;
-
-            case 'inversion':
-                mostrarGrupo('banco', true);
-
-                descripcionFormulario.textContent =
-                    'Registra una inversión vinculada a una de tus cuentas.';
-                break;
-
-            case 'traspaso':
-                mostrarGrupo('traspaso', true);
-
-                descripcionFormulario.textContent =
-                    'Indica las cuentas entre las que quieres realizar el traspaso.';
-                break;
-        }
-
-        actualizarOpcionesBancos();
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Filtrar categorías de ingresos y gastos
-    |--------------------------------------------------------------------------
-    */
-
-    function actualizarCategorias(tipo) {
-        let cantidadDisponibles = 0;
-
-        Array.from(categoriaRegistro.options).forEach(function (opcion) {
-            if (!opcion.value) {
-                opcion.hidden = false;
-                return;
-            }
-
-            const coincide = opcion.dataset.tipo === tipo;
-            opcion.hidden = !coincide;
-
-            if (coincide) {
-                cantidadDisponibles++;
-            }
-        });
-
-        if (cantidadDisponibles === 0) {
-            categoriaRegistro.disabled = true;
-            categoriaRegistro.required = false;
-
-            ayudaCategoria.textContent =
-                'No tienes categorías de este tipo. Crea una en la sección Categorías.';
-        } else {
-            categoriaRegistro.disabled = false;
-            categoriaRegistro.required = true;
-
-            ayudaCategoria.textContent = '';
-        }
-
-        categoriaRegistro.options[0].textContent =
-            cantidadDisponibles > 0
-                ? 'Selecciona una categoría'
-                : 'No hay categorías disponibles';
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Evitar seleccionar la misma cuenta en un traspaso
-    |--------------------------------------------------------------------------
-    */
-
-    function actualizarOpcionesBancos() {
-        const origenSeleccionado = bancoOrigen.value;
-        const destinoSeleccionado = bancoDestino.value;
-
-        Array.from(bancoDestino.options).forEach(function (opcion) {
-            opcion.disabled = Boolean(
-                opcion.value &&
-                opcion.value === origenSeleccionado
-            );
-        });
-
-        Array.from(bancoOrigen.options).forEach(function (opcion) {
-            opcion.disabled = Boolean(
-                opcion.value &&
-                opcion.value === destinoSeleccionado
-            );
-        });
-
-        if (
-            origenSeleccionado &&
-            origenSeleccionado === destinoSeleccionado
-        ) {
-            bancoDestino.value = '';
-        }
-
-        const cuentasDisponibles = bancoOrigen.options.length - 1;
-
-        if (cuentasDisponibles < 2) {
-            ayudaTraspaso.textContent =
-                'Necesitas al menos dos cuentas bancarias para realizar un traspaso.';
-        } else {
-            ayudaTraspaso.textContent =
-                'Las cuentas de origen y destino deben ser distintas.';
-        }
-    }
-
-    bancoOrigen.addEventListener('change', actualizarOpcionesBancos);
-    bancoDestino.addEventListener('change', actualizarOpcionesBancos);
-
-    tipoRegistro.addEventListener('change', actualizarFormulario);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Abrir y cerrar el formulario
-    |--------------------------------------------------------------------------
-    */
-
-    function abrirFormulario() {
-        panel.hidden = false;
-        botonCrear.setAttribute('aria-expanded', 'true');
-
-        mensaje.hidden = true;
-        mensaje.textContent = '';
-
-        tipoRegistro.focus();
-    }
-
-    function cerrarFormulario() {
-        panel.hidden = true;
-        botonCrear.setAttribute('aria-expanded', 'false');
-    }
-
-    botonCrear.addEventListener('click', function () {
-        if (panel.hidden) {
-            abrirFormulario();
-        } else {
-            cerrarFormulario();
-        }
-    });
-
-    botonCerrar.addEventListener('click', cerrarFormulario);
-    botonCancelar.addEventListener('click', cerrarFormulario);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Filtros de período: solo presentación visual
-    |--------------------------------------------------------------------------
-    */
-
-    function actualizarPeriodos() {
-        const rango = filtroRango.value;
-        const fechaActual = new Date();
-        const anioActual = fechaActual.getFullYear();
-
-        filtroPeriodo.innerHTML = '';
-
-        if (rango === 'mensual') {
-            const meses = [
-                'enero', 'febrero', 'marzo', 'abril',
-                'mayo', 'junio', 'julio', 'agosto',
-                'septiembre', 'octubre', 'noviembre', 'diciembre'
-            ];
-
-            meses.forEach(function (mes, indice) {
-                const opcion = document.createElement('option');
-
-                opcion.value =
-                    anioActual + '-' + String(indice + 1).padStart(2, '0');
-
-                opcion.textContent =
-                    mes.charAt(0).toUpperCase() + mes.slice(1) +
-                    ' de ' + anioActual;
-
-                if (indice === fechaActual.getMonth()) {
-                    opcion.selected = true;
-                }
-
-                filtroPeriodo.appendChild(opcion);
-            });
-        } else {
-            for (let anio = anioActual; anio >= anioActual - 4; anio--) {
-                const opcion = document.createElement('option');
-
-                opcion.value = String(anio);
-                opcion.textContent = String(anio);
-
-                filtroPeriodo.appendChild(opcion);
-            }
-        }
-    }
-
-    filtroRango.addEventListener('change', actualizarPeriodos);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Guardado pendiente
-    |--------------------------------------------------------------------------
-    */
-
-    formulario.addEventListener('submit', function (evento) {
-        evento.preventDefault();
-
-        if (tipoRegistro.value === 'traspaso') {
-            if (bancoOrigen.value === bancoDestino.value) {
-                mensaje.textContent =
-                    'Selecciona dos cuentas bancarias diferentes.';
-                mensaje.hidden = false;
-                bancoDestino.focus();
-                return;
-            }
-
-            if (bancoOrigen.options.length < 3) {
-                mensaje.textContent =
-                    'Necesitas al menos dos cuentas bancarias para realizar un traspaso.';
-                mensaje.hidden = false;
-                return;
-            }
-        }
-
-        mensaje.textContent =
-            'El formulario está preparado, pero el guardado de registros todavía no está implementado.';
-        mensaje.hidden = false;
-    });
-
-    actualizarFormulario();
-    actualizarPeriodos();
-})();
 </script>
