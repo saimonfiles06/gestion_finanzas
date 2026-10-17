@@ -353,7 +353,7 @@ try {
 
         $consulta->execute([
             'banco_id' => $bancoId,
-            'importe' => number_format($importe, 2, '.', ''),
+            'importe' => '-' . number_format($importe, 2, '.', ''),
             'fecha' => $fecha,
             'descripcion' => $descripcion ?? 'Inversión'
         ]);
