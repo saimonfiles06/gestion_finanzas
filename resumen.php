@@ -397,7 +397,3 @@ unset($_SESSION['mensaje_resumen']);
     <div class="resumen-contenido"></div>
 
 </div>
-
-<script>
-
-</script>
