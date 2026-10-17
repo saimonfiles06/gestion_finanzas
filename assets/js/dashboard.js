@@ -671,3 +671,452 @@ window.editarCategoria = (categoriaId, nombreActual, tipo) => {
         attributeFilter: ['class']
     });
 })();
+
+(function () {
+    const grafico = document.querySelector('.resumen-grafico-area');
+
+    if (!grafico) {
+        return;
+    }
+
+    function dibujarGraficoBalance() {
+        const ancho = grafico.clientWidth;
+        const alto = grafico.clientHeight;
+
+        if (ancho === 0 || alto === 0) {
+            return;
+        }
+
+        const escala = window.devicePixelRatio || 1;
+        grafico.width = Math.round(ancho * escala);
+        grafico.height = Math.round(alto * escala);
+
+        const contexto = grafico.getContext('2d');
+        if (!contexto) {
+            return;
+        }
+
+        contexto.setTransform(escala, 0, 0, escala, 0, 0);
+        contexto.clearRect(0, 0, ancho, alto);
+
+        const periodos = JSON.parse(grafico.dataset.balance || '[]');
+        const modoOscuro = document.body.classList.contains('modo-oscuro');
+        const colorTexto = modoOscuro ? '#cbd5e1' : '#475569';
+        const colorEjes = modoOscuro ? '#475569' : '#cbd5e1';
+        const margen = { arriba: 18, derecha: 12, abajo: 42, izquierda: 62 };
+        const anchoGrafico = ancho - margen.izquierda - margen.derecha;
+        const altoGrafico = alto - margen.arriba - margen.abajo;
+
+        contexto.font = '12px system-ui, sans-serif';
+        contexto.textAlign = 'right';
+        contexto.textBaseline = 'middle';
+        contexto.fillStyle = colorTexto;
+
+        const valorMaximo = Math.max(
+            1,
+            ...periodos.map((periodo) => Math.max(
+                Number(periodo.ingresos),
+                Number(periodo.gastos)
+            ))
+        );
+        const escalaMaxima = valorMaximo * 1.1;
+        const divisiones = 4;
+
+        for (let indice = 0; indice <= divisiones; indice += 1) {
+            const proporcion = indice / divisiones;
+            const y = margen.arriba + altoGrafico * proporcion;
+            const valor = escalaMaxima * (1 - proporcion);
+
+            contexto.beginPath();
+            contexto.strokeStyle = colorEjes;
+            contexto.lineWidth = 1;
+            contexto.moveTo(margen.izquierda, y);
+            contexto.lineTo(ancho - margen.derecha, y);
+            contexto.stroke();
+            contexto.fillText(
+                new Intl.NumberFormat('es-ES', {
+                    maximumFractionDigits: 0
+                }).format(valor) + ' €',
+                margen.izquierda - 8,
+                y
+            );
+        }
+
+        const puntosX = periodos.map((periodo, indice) => (
+            margen.izquierda + (periodos.length === 1
+                ? anchoGrafico / 2
+                : anchoGrafico * indice / (periodos.length - 1))
+        ));
+        const yBase = margen.arriba + altoGrafico;
+        const colorIngresos = modoOscuro ? '#4ade80' : '#16a34a';
+        const colorGastos = modoOscuro ? '#f87171' : '#dc2626';
+
+        function dibujarArea(clave, color, relleno) {
+            contexto.beginPath();
+            contexto.moveTo(puntosX[0], yBase);
+
+            periodos.forEach((periodo, indice) => {
+                const y = yBase -
+                    Number(periodo[clave]) / escalaMaxima * altoGrafico;
+                contexto.lineTo(puntosX[indice], y);
+            });
+
+            contexto.lineTo(puntosX[puntosX.length - 1], yBase);
+            contexto.closePath();
+            contexto.fillStyle = relleno;
+            contexto.fill();
+
+            contexto.beginPath();
+            periodos.forEach((periodo, indice) => {
+                const y = yBase -
+                    Number(periodo[clave]) / escalaMaxima * altoGrafico;
+                if (indice === 0) {
+                    contexto.moveTo(puntosX[indice], y);
+                } else {
+                    contexto.lineTo(puntosX[indice], y);
+                }
+            });
+            contexto.strokeStyle = color;
+            contexto.lineWidth = 2;
+            contexto.stroke();
+        }
+
+        dibujarArea(
+            'ingresos',
+            colorIngresos,
+            modoOscuro ? 'rgb(74 222 128 / 28%)' : 'rgb(22 163 74 / 20%)'
+        );
+        dibujarArea(
+            'gastos',
+            colorGastos,
+            modoOscuro ? 'rgb(248 113 113 / 28%)' : 'rgb(220 38 38 / 18%)'
+        );
+
+        function dibujarPunto(x, y, color) {
+            contexto.beginPath();
+            contexto.arc(x, y, 4, 0, Math.PI * 2);
+            contexto.fillStyle = color;
+            contexto.fill();
+            contexto.lineWidth = 2;
+            contexto.strokeStyle = modoOscuro ? '#1f2937' : '#ffffff';
+            contexto.stroke();
+        }
+
+        periodos.forEach((periodo, indice) => {
+            if (Number(periodo.registros_ingresos) > 0) {
+                dibujarPunto(
+                    puntosX[indice],
+                    yBase - Number(periodo.ingresos) / escalaMaxima * altoGrafico,
+                    colorIngresos
+                );
+            }
+
+            if (Number(periodo.registros_gastos) > 0) {
+                dibujarPunto(
+                    puntosX[indice],
+                    yBase - Number(periodo.gastos) / escalaMaxima * altoGrafico,
+                    colorGastos
+                );
+            }
+        });
+
+        periodos.forEach((periodo, indice) => {
+            const x = puntosX[indice];
+
+            const etiquetaVisible = periodos.length <= 12
+                || indice % Math.ceil(periodos.length / 10) === 0
+                || indice === periodos.length - 1;
+
+            if (etiquetaVisible) {
+                contexto.fillStyle = colorTexto;
+                contexto.textAlign = 'center';
+                contexto.textBaseline = 'top';
+                contexto.fillText(
+                    periodo.etiqueta,
+                    x,
+                    yBase + 12
+                );
+            }
+        });
+
+        contexto.save();
+        contexto.translate(16, margen.arriba + altoGrafico / 2);
+        contexto.rotate(-Math.PI / 2);
+        contexto.fillStyle = colorTexto;
+        contexto.textAlign = 'center';
+        contexto.textBaseline = 'middle';
+        contexto.fillText('Cantidad (€)', 0, 0);
+        contexto.restore();
+    }
+
+    const observadorTamano = new ResizeObserver(dibujarGraficoBalance);
+    observadorTamano.observe(grafico);
+
+    const observadorModo = new MutationObserver(dibujarGraficoBalance);
+    observadorModo.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+})();
+
+(function () {
+    const grafico = document.querySelector('.resumen-grafico-balance');
+
+    if (!grafico) {
+        return;
+    }
+
+    function dibujarBalanceNeto() {
+        const ancho = grafico.clientWidth;
+        const alto = grafico.clientHeight;
+
+        if (ancho === 0 || alto === 0) {
+            return;
+        }
+
+        const escala = window.devicePixelRatio || 1;
+        grafico.width = Math.round(ancho * escala);
+        grafico.height = Math.round(alto * escala);
+
+        const contexto = grafico.getContext('2d');
+        if (!contexto) {
+            return;
+        }
+
+        contexto.setTransform(escala, 0, 0, escala, 0, 0);
+        contexto.clearRect(0, 0, ancho, alto);
+
+        const periodos = JSON.parse(grafico.dataset.balance || '[]');
+        const modoOscuro = document.body.classList.contains('modo-oscuro');
+        const colorTexto = modoOscuro ? '#cbd5e1' : '#475569';
+        const colorEjes = modoOscuro ? '#475569' : '#cbd5e1';
+        const colorBalance = modoOscuro ? '#60a5fa' : '#2563eb';
+        const rellenoBalance = modoOscuro
+            ? 'rgb(96 165 250 / 28%)'
+            : 'rgb(37 99 235 / 20%)';
+        const margen = { arriba: 18, derecha: 12, abajo: 42, izquierda: 68 };
+        const anchoGrafico = ancho - margen.izquierda - margen.derecha;
+        const altoGrafico = alto - margen.arriba - margen.abajo;
+
+        if (periodos.length === 0) {
+            return;
+        }
+
+        const balances = periodos.map(
+            (periodo) => Number(periodo.ingresos) - Number(periodo.gastos)
+        );
+        const valorMaximo = Math.max(1, ...balances.map(Math.abs)) * 1.1;
+        const minimo = -valorMaximo;
+        const maximo = valorMaximo;
+        const yDeValor = (valor) => (
+            margen.arriba + (maximo - valor) / (maximo - minimo) * altoGrafico
+        );
+        const yCero = yDeValor(0);
+        const puntosX = periodos.map((periodo, indice) => (
+            margen.izquierda + (periodos.length === 1
+                ? anchoGrafico / 2
+                : anchoGrafico * indice / (periodos.length - 1))
+        ));
+
+        contexto.font = '12px system-ui, sans-serif';
+        contexto.textAlign = 'right';
+        contexto.textBaseline = 'middle';
+
+        for (let indice = 0; indice <= 4; indice += 1) {
+            const valor = maximo - (maximo - minimo) * indice / 4;
+            const y = yDeValor(valor);
+
+            contexto.beginPath();
+            contexto.strokeStyle = Math.abs(valor) < 0.000001
+                ? colorTexto
+                : colorEjes;
+            contexto.lineWidth = Math.abs(valor) < 0.000001 ? 1.5 : 1;
+            contexto.moveTo(margen.izquierda, y);
+            contexto.lineTo(ancho - margen.derecha, y);
+            contexto.stroke();
+            contexto.fillStyle = colorTexto;
+            contexto.fillText(
+                new Intl.NumberFormat('es-ES', {
+                    maximumFractionDigits: 0
+                }).format(valor) + ' €',
+                margen.izquierda - 8,
+                y
+            );
+        }
+
+        contexto.beginPath();
+        contexto.moveTo(puntosX[0], yCero);
+        balances.forEach((balance, indice) => {
+            contexto.lineTo(puntosX[indice], yDeValor(balance));
+        });
+        contexto.lineTo(puntosX[puntosX.length - 1], yCero);
+        contexto.closePath();
+        contexto.fillStyle = rellenoBalance;
+        contexto.fill();
+
+        contexto.beginPath();
+        balances.forEach((balance, indice) => {
+            if (indice === 0) {
+                contexto.moveTo(puntosX[indice], yDeValor(balance));
+            } else {
+                contexto.lineTo(puntosX[indice], yDeValor(balance));
+            }
+        });
+        contexto.strokeStyle = colorBalance;
+        contexto.lineWidth = 2;
+        contexto.stroke();
+
+        periodos.forEach((periodo, indice) => {
+            if (
+                Number(periodo.registros_ingresos) > 0
+                || Number(periodo.registros_gastos) > 0
+            ) {
+                contexto.beginPath();
+                contexto.arc(puntosX[indice], yDeValor(balances[indice]), 4, 0, Math.PI * 2);
+                contexto.fillStyle = colorBalance;
+                contexto.fill();
+                contexto.lineWidth = 2;
+                contexto.strokeStyle = modoOscuro ? '#1f2937' : '#ffffff';
+                contexto.stroke();
+            }
+
+            const etiquetaVisible = periodos.length <= 12
+                || indice % Math.ceil(periodos.length / 10) === 0
+                || indice === periodos.length - 1;
+
+            if (etiquetaVisible) {
+                contexto.fillStyle = colorTexto;
+                contexto.textAlign = 'center';
+                contexto.textBaseline = 'top';
+                contexto.fillText(
+                    periodo.etiqueta,
+                    puntosX[indice],
+                    margen.arriba + altoGrafico + 12
+                );
+            }
+        });
+
+        contexto.save();
+        contexto.translate(17, margen.arriba + altoGrafico / 2);
+        contexto.rotate(-Math.PI / 2);
+        contexto.fillStyle = colorTexto;
+        contexto.textAlign = 'center';
+        contexto.textBaseline = 'middle';
+        contexto.fillText('Balance neto (€)', 0, 0);
+        contexto.restore();
+    }
+
+    const observadorTamano = new ResizeObserver(dibujarBalanceNeto);
+    observadorTamano.observe(grafico);
+
+    const observadorModo = new MutationObserver(dibujarBalanceNeto);
+    observadorModo.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+})();
+
+(function () {
+    const graficos = document.querySelectorAll(
+        '.resumen-grafico-area, .resumen-grafico-balance'
+    );
+
+    function formatearEuros(valor) {
+        return new Intl.NumberFormat('es-ES', {
+            style: 'currency',
+            currency: 'EUR'
+        }).format(valor);
+    }
+
+    graficos.forEach((grafico) => {
+        const tooltip = grafico.parentElement.querySelector(
+            '.resumen-area-tooltip'
+        );
+        const periodos = JSON.parse(grafico.dataset.balance || '[]');
+        const esBalanceNeto = grafico.classList.contains(
+            'resumen-grafico-balance'
+        );
+        const margenIzquierda = esBalanceNeto ? 68 : 62;
+        const margenDerecha = 12;
+
+        if (!tooltip || periodos.length === 0) {
+            return;
+        }
+
+        grafico.addEventListener('mousemove', (evento) => {
+            const rectangulo = grafico.getBoundingClientRect();
+            const posicionX = evento.clientX - rectangulo.left;
+            const anchoGrafico = rectangulo.width -
+                margenIzquierda - margenDerecha;
+            const fraccion = Math.max(
+                0,
+                Math.min(1, (posicionX - margenIzquierda) / anchoGrafico)
+            );
+            const indice = periodos.length === 1
+                ? 0
+                : Math.round(fraccion * (periodos.length - 1));
+            const periodo = periodos[indice];
+            const encabezado = document.createElement('strong');
+            encabezado.textContent = `${periodo.etiqueta}:`;
+            tooltip.replaceChildren(encabezado);
+
+            const valores = esBalanceNeto
+                ? [{
+                    nombre: 'Balance',
+                    valor: Number(periodo.ingresos) - Number(periodo.gastos),
+                    color: document.body.classList.contains('modo-oscuro')
+                        ? '#60a5fa'
+                        : '#2563eb'
+                }]
+                : [
+                    {
+                        nombre: 'Ingresos',
+                        valor: Number(periodo.ingresos),
+                        color: document.body.classList.contains('modo-oscuro')
+                            ? '#4ade80'
+                            : '#16a34a'
+                    },
+                    {
+                        nombre: 'Gastos',
+                        valor: Number(periodo.gastos),
+                        color: document.body.classList.contains('modo-oscuro')
+                            ? '#f87171'
+                            : '#dc2626'
+                    }
+                ];
+
+            valores.forEach((dato) => {
+                const linea = document.createElement('span');
+                const punto = document.createElement('i');
+                const texto = document.createElement('span');
+
+                linea.className = 'resumen-area-tooltip-linea';
+                punto.className = 'resumen-area-tooltip-punto';
+                punto.style.setProperty('--tooltip-color', dato.color);
+                punto.setAttribute('aria-hidden', 'true');
+                texto.textContent = `${dato.nombre}: ${formatearEuros(dato.valor)}`;
+
+                linea.append(punto, texto);
+                tooltip.appendChild(linea);
+            });
+
+            tooltip.hidden = false;
+            const limiteX = tooltip.parentElement.clientWidth -
+                tooltip.offsetWidth - 8;
+            const limiteY = tooltip.parentElement.clientHeight -
+                tooltip.offsetHeight - 8;
+            tooltip.style.left = `${Math.max(
+                8,
+                Math.min(posicionX + 12, limiteX)
+            )}px`;
+            tooltip.style.top = `${Math.max(
+                8,
+                Math.min(evento.clientY - rectangulo.top + 12, limiteY)
+            )}px`;
+        });
+
+        grafico.addEventListener('mouseleave', () => {
+            tooltip.hidden = true;
+        });
+    });
+})();

@@ -184,7 +184,9 @@ try {
         $consulta->execute([
             'banco_id' => $bancoId,
             'tipo' => $tipo,
-            'importe' => number_format($importe, 2, '.', ''),
+            'importe' => $tipo === 'gasto'
+                ? '-' . number_format($importe, 2, '.', '')
+                : number_format($importe, 2, '.', ''),
             'fecha' => $fecha,
             'descripcion' => $descripcion,
             'registro_id' => $registroId

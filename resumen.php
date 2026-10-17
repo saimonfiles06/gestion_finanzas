@@ -205,6 +205,94 @@ foreach (['ingreso', 'gasto'] as $tipoCategoriaResumen) {
     }
 }
 
+$periodosBalanceResumen = [];
+$cursorPeriodoBalance = new DateTimeImmutable($fechaInicioResumen);
+$finPeriodoBalance = new DateTimeImmutable($fechaFinResumen);
+
+if ($rangoResumen === 'mensual') {
+    while ($cursorPeriodoBalance < $finPeriodoBalance) {
+        $periodosBalanceResumen[$cursorPeriodoBalance->format('Y-m-d')] = [
+            'etiqueta' => (string) (int) $cursorPeriodoBalance->format('j'),
+            'ingresos' => 0.0,
+            'gastos' => 0.0,
+            'registros_ingresos' => 0,
+            'registros_gastos' => 0
+        ];
+        $cursorPeriodoBalance = $cursorPeriodoBalance->modify('+1 day');
+    }
+    $formatoAgrupacionBalance = '%Y-%m-%d';
+} else {
+    $nombresMesesCortosResumen = [
+        1 => 'Ene',
+        2 => 'Feb',
+        3 => 'Mar',
+        4 => 'Abr',
+        5 => 'May',
+        6 => 'Jun',
+        7 => 'Jul',
+        8 => 'Ago',
+        9 => 'Sep',
+        10 => 'Oct',
+        11 => 'Nov',
+        12 => 'Dic'
+    ];
+
+    while ($cursorPeriodoBalance < $finPeriodoBalance) {
+        $claveMesBalance = $cursorPeriodoBalance->format('Y-m');
+        $periodosBalanceResumen[$claveMesBalance] = [
+            'etiqueta' => $nombresMesesCortosResumen[
+                (int) $cursorPeriodoBalance->format('n')
+            ],
+            'ingresos' => 0.0,
+            'gastos' => 0.0,
+            'registros_ingresos' => 0,
+            'registros_gastos' => 0
+        ];
+        $cursorPeriodoBalance = $cursorPeriodoBalance->modify('+1 month');
+    }
+    $formatoAgrupacionBalance = '%Y-%m';
+}
+
+$consultaBalanceTemporal = $conexion->prepare(
+    'SELECT
+        DATE_FORMAT(fecha, :formato) AS periodo,
+        SUM(CASE WHEN tipo = "ingreso" THEN importe ELSE 0 END) AS ingresos,
+        SUM(CASE WHEN tipo = "gasto" THEN importe ELSE 0 END) AS gastos,
+        SUM(CASE WHEN tipo = "ingreso" THEN 1 ELSE 0 END) AS registros_ingresos,
+        SUM(CASE WHEN tipo = "gasto" THEN 1 ELSE 0 END) AS registros_gastos
+     FROM registros
+     WHERE usuario_id = :usuario_id
+       AND fecha >= :fecha_inicio
+       AND fecha < :fecha_fin
+     GROUP BY DATE_FORMAT(fecha, :formato_agrupacion)
+     ORDER BY periodo'
+);
+$consultaBalanceTemporal->execute([
+    'formato' => $formatoAgrupacionBalance,
+    'usuario_id' => $usuarioId,
+    'fecha_inicio' => $fechaInicioResumen,
+    'fecha_fin' => $fechaFinResumen,
+    'formato_agrupacion' => $formatoAgrupacionBalance
+]);
+
+foreach ($consultaBalanceTemporal->fetchAll(PDO::FETCH_ASSOC) as $balanceTemporal) {
+    if (isset($periodosBalanceResumen[$balanceTemporal['periodo']])) {
+        $periodosBalanceResumen[$balanceTemporal['periodo']]['ingresos'] =
+            (float) $balanceTemporal['ingresos'];
+        $periodosBalanceResumen[$balanceTemporal['periodo']]['gastos'] =
+            (float) $balanceTemporal['gastos'];
+        $periodosBalanceResumen[$balanceTemporal['periodo']]['registros_ingresos'] =
+            (int) $balanceTemporal['registros_ingresos'];
+        $periodosBalanceResumen[$balanceTemporal['periodo']]['registros_gastos'] =
+            (int) $balanceTemporal['registros_gastos'];
+    }
+}
+
+$datosBalanceTemporalJson = json_encode(
+    array_values($periodosBalanceResumen),
+    JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+);
+
 $consultaSaldoBancos = $conexion->prepare(
     'SELECT COALESCE(SUM(b.saldo_inicial + COALESCE(m.saldo, 0)), 0)
      FROM bancos b
@@ -697,6 +785,7 @@ unset($_SESSION['mensaje_resumen']);
                     </p>
                 </article>
             </div>
+
         </section>
 
         <section class="resumen-grupo" aria-labelledby="resumen-patrimonio-titulo">
@@ -743,6 +832,7 @@ unset($_SESSION['mensaje_resumen']);
                     </p>
                 </article>
             </div>
+
         </section>
 
         <section class="resumen-grupo" aria-labelledby="resumen-categorias-titulo">
@@ -823,6 +913,47 @@ unset($_SESSION['mensaje_resumen']);
                     </div>
                 </article>
             </div>
+
+            <article class="resumen-grafico-tarjeta resumen-grafico-area-tarjeta">
+                <h3>Ingresos y gastos por <?= $rangoResumen === 'mensual' ? 'día' : 'mes' ?></h3>
+                <div class="resumen-grafico-area-contenido">
+                    <canvas
+                        class="resumen-grafico-area"
+                        data-balance="<?= htmlspecialchars(
+                            $datosBalanceTemporalJson,
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>"
+                        role="img"
+                        aria-label="Gráfico de áreas superpuestas de ingresos y gastos por <?= $rangoResumen === 'mensual' ? 'día' : 'mes' ?>"
+                    ></canvas>
+                    <div class="resumen-area-tooltip" role="tooltip" hidden></div>
+                </div>
+                <div class="resumen-area-leyenda" aria-hidden="true">
+                    <span><i class="resumen-area-indicador resumen-area-ingresos"></i>Ingresos</span>
+                    <span><i class="resumen-area-indicador resumen-area-gastos"></i>Gastos</span>
+                </div>
+            </article>
+
+            <article class="resumen-grafico-tarjeta resumen-grafico-area-tarjeta">
+                <h3>Balance por <?= $rangoResumen === 'mensual' ? 'día' : 'mes' ?></h3>
+                <div class="resumen-grafico-area-contenido">
+                    <canvas
+                        class="resumen-grafico-balance"
+                        data-balance="<?= htmlspecialchars(
+                            $datosBalanceTemporalJson,
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>"
+                        role="img"
+                        aria-label="Gráfico de área azul del balance neto, ingresos menos gastos, por <?= $rangoResumen === 'mensual' ? 'día' : 'mes' ?>"
+                    ></canvas>
+                    <div class="resumen-area-tooltip" role="tooltip" hidden></div>
+                </div>
+                <div class="resumen-area-leyenda" aria-hidden="true">
+                    <span><i class="resumen-area-indicador resumen-area-balance"></i>Balance (ingresos menos gastos)</span>
+                </div>
+            </article>
         </section>
     </div>
 
