@@ -1017,8 +1017,186 @@ window.editarCategoria = (categoriaId, nombreActual, tipo) => {
 })();
 
 (function () {
+    const grafico = document.querySelector('.resumen-grafico-ahorro-inversion');
+
+    if (!grafico) {
+        return;
+    }
+
+    function dibujarAhorroInversion() {
+        const ancho = grafico.clientWidth;
+        const alto = grafico.clientHeight;
+
+        if (ancho === 0 || alto === 0) {
+            return;
+        }
+
+        const escala = window.devicePixelRatio || 1;
+        grafico.width = Math.round(ancho * escala);
+        grafico.height = Math.round(alto * escala);
+
+        const contexto = grafico.getContext('2d');
+        if (!contexto) {
+            return;
+        }
+
+        contexto.setTransform(escala, 0, 0, escala, 0, 0);
+        contexto.clearRect(0, 0, ancho, alto);
+
+        const periodos = JSON.parse(grafico.dataset.balance || '[]');
+        if (periodos.length === 0) {
+            return;
+        }
+
+        const modoOscuro = document.body.classList.contains('modo-oscuro');
+        const colorTexto = modoOscuro ? '#cbd5e1' : '#475569';
+        const colorEjes = modoOscuro ? '#475569' : '#cbd5e1';
+        const colorAhorro = modoOscuro ? '#7dd3fc' : '#0284c7';
+        const colorInversion = modoOscuro ? '#facc15' : '#b7791f';
+        const margen = { arriba: 18, derecha: 12, abajo: 42, izquierda: 62 };
+        const anchoGrafico = ancho - margen.izquierda - margen.derecha;
+        const altoGrafico = alto - margen.arriba - margen.abajo;
+        const valorMaximo = Math.max(
+            1,
+            ...periodos.map((periodo) => Math.max(
+                Number(periodo.ahorro),
+                Number(periodo.inversion)
+            ))
+        ) * 1.1;
+        const yBase = margen.arriba + altoGrafico;
+        const puntosX = periodos.map((periodo, indice) => (
+            margen.izquierda + (periodos.length === 1
+                ? anchoGrafico / 2
+                : anchoGrafico * indice / (periodos.length - 1))
+        ));
+        const yDeImporte = (importe) => (
+            yBase - Number(importe) / valorMaximo * altoGrafico
+        );
+
+        contexto.font = '12px system-ui, sans-serif';
+        contexto.textAlign = 'right';
+        contexto.textBaseline = 'middle';
+
+        for (let indice = 0; indice <= 4; indice += 1) {
+            const proporcion = indice / 4;
+            const valor = valorMaximo * (1 - proporcion);
+            const y = margen.arriba + altoGrafico * proporcion;
+
+            contexto.beginPath();
+            contexto.strokeStyle = colorEjes;
+            contexto.lineWidth = 1;
+            contexto.moveTo(margen.izquierda, y);
+            contexto.lineTo(ancho - margen.derecha, y);
+            contexto.stroke();
+            contexto.fillStyle = colorTexto;
+            contexto.fillText(
+                new Intl.NumberFormat('es-ES', {
+                    maximumFractionDigits: 0
+                }).format(valor) + ' €',
+                margen.izquierda - 8,
+                y
+            );
+        }
+
+        function dibujarArea(clave, color, relleno) {
+            contexto.beginPath();
+            contexto.moveTo(puntosX[0], yBase);
+            periodos.forEach((periodo, indice) => {
+                contexto.lineTo(puntosX[indice], yDeImporte(periodo[clave]));
+            });
+            contexto.lineTo(puntosX[puntosX.length - 1], yBase);
+            contexto.closePath();
+            contexto.fillStyle = relleno;
+            contexto.fill();
+
+            contexto.beginPath();
+            periodos.forEach((periodo, indice) => {
+                const y = yDeImporte(periodo[clave]);
+                if (indice === 0) {
+                    contexto.moveTo(puntosX[indice], y);
+                } else {
+                    contexto.lineTo(puntosX[indice], y);
+                }
+            });
+            contexto.strokeStyle = color;
+            contexto.lineWidth = 2;
+            contexto.stroke();
+        }
+
+        dibujarArea(
+            'ahorro',
+            colorAhorro,
+            modoOscuro ? 'rgb(125 211 252 / 28%)' : 'rgb(56 189 248 / 22%)'
+        );
+        dibujarArea(
+            'inversion',
+            colorInversion,
+            modoOscuro ? 'rgb(250 204 21 / 25%)' : 'rgb(212 160 23 / 20%)'
+        );
+
+        periodos.forEach((periodo, indice) => {
+            [
+                ['registros_ahorro', 'ahorro', colorAhorro],
+                ['registros_inversion', 'inversion', colorInversion]
+            ].forEach(([campoRegistros, campoImporte, color]) => {
+                if (Number(periodo[campoRegistros]) === 0) {
+                    return;
+                }
+
+                contexto.beginPath();
+                contexto.arc(
+                    puntosX[indice],
+                    yDeImporte(periodo[campoImporte]),
+                    4,
+                    0,
+                    Math.PI * 2
+                );
+                contexto.fillStyle = color;
+                contexto.fill();
+                contexto.lineWidth = 2;
+                contexto.strokeStyle = modoOscuro ? '#1f2937' : '#ffffff';
+                contexto.stroke();
+            });
+
+            const etiquetaVisible = periodos.length <= 12
+                || indice % Math.ceil(periodos.length / 10) === 0
+                || indice === periodos.length - 1;
+
+            if (etiquetaVisible) {
+                contexto.fillStyle = colorTexto;
+                contexto.textAlign = 'center';
+                contexto.textBaseline = 'top';
+                contexto.fillText(
+                    periodo.etiqueta,
+                    puntosX[indice],
+                    yBase + 12
+                );
+            }
+        });
+
+        contexto.save();
+        contexto.translate(16, margen.arriba + altoGrafico / 2);
+        contexto.rotate(-Math.PI / 2);
+        contexto.fillStyle = colorTexto;
+        contexto.textAlign = 'center';
+        contexto.textBaseline = 'middle';
+        contexto.fillText('Cantidad (€)', 0, 0);
+        contexto.restore();
+    }
+
+    const observadorTamano = new ResizeObserver(dibujarAhorroInversion);
+    observadorTamano.observe(grafico);
+
+    const observadorModo = new MutationObserver(dibujarAhorroInversion);
+    observadorModo.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+})();
+
+(function () {
     const graficos = document.querySelectorAll(
-        '.resumen-grafico-area, .resumen-grafico-balance'
+        '.resumen-grafico-area, .resumen-grafico-balance, .resumen-grafico-ahorro-inversion'
     );
 
     function formatearEuros(valor) {
@@ -1035,6 +1213,9 @@ window.editarCategoria = (categoriaId, nombreActual, tipo) => {
         const periodos = JSON.parse(grafico.dataset.balance || '[]');
         const esBalanceNeto = grafico.classList.contains(
             'resumen-grafico-balance'
+        );
+        const esAhorroInversion = grafico.classList.contains(
+            'resumen-grafico-ahorro-inversion'
         );
         const margenIzquierda = esBalanceNeto ? 68 : 62;
         const margenDerecha = 12;
@@ -1060,28 +1241,36 @@ window.editarCategoria = (categoriaId, nombreActual, tipo) => {
             encabezado.textContent = `${periodo.etiqueta}:`;
             tooltip.replaceChildren(encabezado);
 
+            const modoOscuro = document.body.classList.contains('modo-oscuro');
             const valores = esBalanceNeto
                 ? [{
                     nombre: 'Balance',
                     valor: Number(periodo.ingresos) - Number(periodo.gastos),
-                    color: document.body.classList.contains('modo-oscuro')
-                        ? '#60a5fa'
-                        : '#2563eb'
+                    color: modoOscuro ? '#60a5fa' : '#2563eb'
                 }]
+                : esAhorroInversion
+                    ? [
+                        {
+                            nombre: 'Ahorro',
+                            valor: Number(periodo.ahorro),
+                            color: modoOscuro ? '#7dd3fc' : '#0284c7'
+                        },
+                        {
+                            nombre: 'Inversión',
+                            valor: Number(periodo.inversion),
+                            color: modoOscuro ? '#facc15' : '#b7791f'
+                        }
+                    ]
                 : [
                     {
                         nombre: 'Ingresos',
                         valor: Number(periodo.ingresos),
-                        color: document.body.classList.contains('modo-oscuro')
-                            ? '#4ade80'
-                            : '#16a34a'
+                        color: modoOscuro ? '#4ade80' : '#16a34a'
                     },
                     {
                         nombre: 'Gastos',
                         valor: Number(periodo.gastos),
-                        color: document.body.classList.contains('modo-oscuro')
-                            ? '#f87171'
-                            : '#dc2626'
+                        color: modoOscuro ? '#f87171' : '#dc2626'
                     }
                 ];
 

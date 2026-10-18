@@ -216,7 +216,11 @@ if ($rangoResumen === 'mensual') {
             'ingresos' => 0.0,
             'gastos' => 0.0,
             'registros_ingresos' => 0,
-            'registros_gastos' => 0
+            'registros_gastos' => 0,
+            'ahorro' => 0.0,
+            'inversion' => 0.0,
+            'registros_ahorro' => 0,
+            'registros_inversion' => 0
         ];
         $cursorPeriodoBalance = $cursorPeriodoBalance->modify('+1 day');
     }
@@ -246,7 +250,11 @@ if ($rangoResumen === 'mensual') {
             'ingresos' => 0.0,
             'gastos' => 0.0,
             'registros_ingresos' => 0,
-            'registros_gastos' => 0
+            'registros_gastos' => 0,
+            'ahorro' => 0.0,
+            'inversion' => 0.0,
+            'registros_ahorro' => 0,
+            'registros_inversion' => 0
         ];
         $cursorPeriodoBalance = $cursorPeriodoBalance->modify('+1 month');
     }
@@ -286,6 +294,60 @@ foreach ($consultaBalanceTemporal->fetchAll(PDO::FETCH_ASSOC) as $balanceTempora
         $periodosBalanceResumen[$balanceTemporal['periodo']]['registros_gastos'] =
             (int) $balanceTemporal['registros_gastos'];
     }
+}
+
+$consultaAhorroInversionTemporal = $conexion->prepare(
+    'SELECT periodo, tipo, SUM(importe) AS importe, COUNT(*) AS registros
+     FROM (
+         SELECT
+             DATE_FORMAT(fecha, :formato_aportaciones) AS periodo,
+             "ahorro" AS tipo,
+             importe
+         FROM aportaciones_objetivos
+         WHERE usuario_id = :usuario_aportaciones
+           AND fecha >= :inicio_aportaciones
+           AND fecha < :fin_aportaciones
+
+         UNION ALL
+
+         SELECT
+             DATE_FORMAT(fecha, :formato_inversiones) AS periodo,
+             "inversion" AS tipo,
+             importe
+         FROM inversiones
+         WHERE usuario_id = :usuario_inversiones
+           AND fecha >= :inicio_inversiones
+           AND fecha < :fin_inversiones
+     ) aportes
+     GROUP BY periodo, tipo
+     ORDER BY periodo'
+);
+$consultaAhorroInversionTemporal->execute([
+    'formato_aportaciones' => $formatoAgrupacionBalance,
+    'usuario_aportaciones' => $usuarioId,
+    'inicio_aportaciones' => $fechaInicioResumen,
+    'fin_aportaciones' => $fechaFinResumen,
+    'formato_inversiones' => $formatoAgrupacionBalance,
+    'usuario_inversiones' => $usuarioId,
+    'inicio_inversiones' => $fechaInicioResumen,
+    'fin_inversiones' => $fechaFinResumen
+]);
+
+foreach (
+    $consultaAhorroInversionTemporal->fetchAll(PDO::FETCH_ASSOC)
+    as $movimientoPatrimonial
+) {
+    $periodo = $movimientoPatrimonial['periodo'];
+    $tipo = $movimientoPatrimonial['tipo'];
+
+    if (!isset($periodosBalanceResumen[$periodo])) {
+        continue;
+    }
+
+    $periodosBalanceResumen[$periodo][$tipo] =
+        (float) $movimientoPatrimonial['importe'];
+    $periodosBalanceResumen[$periodo]['registros_' . $tipo] =
+        (int) $movimientoPatrimonial['registros'];
 }
 
 $datosBalanceTemporalJson = json_encode(
@@ -952,6 +1014,27 @@ unset($_SESSION['mensaje_resumen']);
                 </div>
                 <div class="resumen-area-leyenda" aria-hidden="true">
                     <span><i class="resumen-area-indicador resumen-area-balance"></i>Balance (ingresos menos gastos)</span>
+                </div>
+            </article>
+
+            <article class="resumen-grafico-tarjeta resumen-grafico-area-tarjeta">
+                <h3>Ahorro e inversión por <?= $rangoResumen === 'mensual' ? 'día' : 'mes' ?></h3>
+                <div class="resumen-grafico-area-contenido">
+                    <canvas
+                        class="resumen-grafico-ahorro-inversion"
+                        data-balance="<?= htmlspecialchars(
+                            $datosBalanceTemporalJson,
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>"
+                        role="img"
+                        aria-label="Gráfico de áreas superpuestas de ahorro e inversión por <?= $rangoResumen === 'mensual' ? 'día' : 'mes' ?>"
+                    ></canvas>
+                    <div class="resumen-area-tooltip" role="tooltip" hidden></div>
+                </div>
+                <div class="resumen-area-leyenda" aria-hidden="true">
+                    <span><i class="resumen-area-indicador resumen-area-ahorro"></i>Ahorro</span>
+                    <span><i class="resumen-area-indicador resumen-area-inversion"></i>Inversión</span>
                 </div>
             </article>
         </section>
