@@ -116,7 +116,7 @@ if (empty($_SESSION['csrf_token'])) {
                     data-seccion="presupuestos"
                     title="Presupuestos">
                     <span class="nav-icon" aria-hidden="true">
-                        <i class="bi bi-arrow-left-right"></i>
+                        <i class="bi bi-wallet2"></i>
                     </span>
                     <span class="nav-text">Presupuestos</span>
                 </button>
@@ -205,6 +205,12 @@ if (empty($_SESSION['csrf_token'])) {
                 class="dashboard-seccion"
                 hidden>
                 <?php require __DIR__ . '/objetivos.php'; ?>
+            </section>
+            <section
+                id="seccion-presupuestos"
+                class="dashboard-seccion"
+                hidden>
+                <?php require __DIR__ . '/presupuestos.php'; ?>
             </section>
         </main>
     </div>
