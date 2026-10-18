@@ -6,6 +6,21 @@ if (!isset($_SESSION['usuario_id'])) {
     exit;
 }
 require_once __DIR__ . '/includes/conexion.php';
+$consultaUsuarioDashboard = $conexion->prepare(
+    'SELECT email, preferencia_modo
+     FROM usuarios
+     WHERE id = :usuario_id'
+);
+$consultaUsuarioDashboard->execute([
+    'usuario_id' => (int) $_SESSION['usuario_id']
+]);
+$usuarioDashboard = $consultaUsuarioDashboard->fetch(PDO::FETCH_ASSOC);
+if (!$usuarioDashboard) {
+    session_destroy();
+    header('Location: login.php');
+    exit;
+}
+$_SESSION['preferencia_modo'] = $usuarioDashboard['preferencia_modo'];
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
@@ -25,7 +40,10 @@ if (empty($_SESSION['csrf_token'])) {
     <script src="assets/js/dashboard.js" defer></script>
 </head>
 
-<body class="dashboard-page">
+<body
+    class="dashboard-page<?= $usuarioDashboard['preferencia_modo'] === 'oscuro' ? ' modo-oscuro' : '' ?>"
+    data-csrf-token="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>"
+>
 
     <div class="dashboard-layout">
 
@@ -211,6 +229,12 @@ if (empty($_SESSION['csrf_token'])) {
                 class="dashboard-seccion"
                 hidden>
                 <?php require __DIR__ . '/presupuestos.php'; ?>
+            </section>
+            <section
+                id="seccion-cuenta"
+                class="dashboard-seccion"
+                hidden>
+                <?php require __DIR__ . '/cuenta.php'; ?>
             </section>
         </main>
     </div>

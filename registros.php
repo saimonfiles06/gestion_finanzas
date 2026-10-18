@@ -460,7 +460,11 @@ unset($_SESSION['mensaje_registro']);
                         );
                         ?>
                         <tr>
-                            <td data-label="Tipo"><?= escaparRegistro($tiposRegistro[$operacion['tipo']] ?? $operacion['tipo']) ?></td>
+                            <td data-label="Tipo">
+                                <span class="registro-etiqueta-tipo registro-etiqueta-tipo-<?= escaparRegistro($operacion['tipo']) ?>">
+                                    <?= escaparRegistro($tiposRegistro[$operacion['tipo']] ?? $operacion['tipo']) ?>
+                                </span>
+                            </td>
                             <td data-label="Concepto"><?= escaparRegistro($operacion['concepto']) ?></td>
                             <td data-label="Cantidad"><?= eurosRegistro($operacion['importe']) ?></td>
                             <td data-label="Fecha"><?= escaparRegistro(date('d/m/Y', strtotime($operacion['fecha']))) ?></td>

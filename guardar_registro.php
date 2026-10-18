@@ -124,6 +124,7 @@ try {
             'SELECT id, permite_ingresos, permite_gastos
              FROM bancos
              WHERE id = :banco_id AND usuario_id = :usuario_id
+               AND eliminado = 0
              FOR UPDATE'
         );
 
@@ -231,6 +232,7 @@ try {
             'SELECT id, permite_gastos
              FROM bancos
              WHERE id = :banco_id AND usuario_id = :usuario_id
+               AND eliminado = 0
              FOR UPDATE'
         );
 
@@ -329,6 +331,7 @@ try {
             'SELECT id, permite_gastos
              FROM bancos
              WHERE id = :banco_id AND usuario_id = :usuario_id
+               AND eliminado = 0
              FOR UPDATE'
         );
 
@@ -403,6 +406,7 @@ try {
             'SELECT id, permite_ingresos, permite_gastos
              FROM bancos
              WHERE id = :banco_id AND usuario_id = :usuario_id
+               AND eliminado = 0
              FOR UPDATE'
         );
 

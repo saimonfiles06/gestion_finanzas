@@ -87,7 +87,7 @@ function bloquearBanco(
     $consulta = $conexion->prepare(
         'SELECT id
          FROM bancos
-         WHERE id = ? AND usuario_id = ?
+        WHERE id = ? AND usuario_id = ? AND eliminado = 0
          FOR UPDATE'
     );
 
@@ -200,7 +200,7 @@ try {
                 'UPDATE bancos
                  SET permite_ingresos = ?,
                      permite_gastos = ?
-                 WHERE id = ? AND usuario_id = ?'
+                 WHERE id = ? AND usuario_id = ? AND eliminado = 0'
             );
 
             $consulta->execute([
@@ -215,7 +215,7 @@ try {
                 $comprobar = $conexion->prepare(
                     'SELECT id
                      FROM bancos
-                     WHERE id = ? AND usuario_id = ?'
+                     WHERE id = ? AND usuario_id = ? AND eliminado = 0'
                 );
 
                 $comprobar->execute([$bancoId, $usuarioId]);
@@ -368,6 +368,7 @@ try {
                     permite_gastos
                  FROM bancos
                  WHERE usuario_id = ? AND id IN (?, ?)
+                   AND eliminado = 0
                  ORDER BY id
                  FOR UPDATE'
             );
@@ -474,10 +475,11 @@ try {
                 volverBancos('saldo_no_cero');
             }
 
-            // Eliminar exclusivamente el banco del usuario actual.
+            // Archivar para conservar las relaciones y el historial financiero.
             $eliminar = $conexion->prepare(
-                'DELETE FROM bancos
-                 WHERE id = ? AND usuario_id = ?'
+                'UPDATE bancos
+                 SET eliminado = 1
+                 WHERE id = ? AND usuario_id = ? AND eliminado = 0'
             );
 
             $eliminar->execute([

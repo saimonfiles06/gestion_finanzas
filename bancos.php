@@ -9,7 +9,7 @@ $mensajeBancos = [
     'saldo_insuficiente' => 'La cuenta de origen no tiene saldo suficiente.',
     'permisos_incompatibles' => 'Revisa los permisos de ingresos y gastos de las cuentas.',
     'error' => 'Ha ocurrido un error. Inténtalo de nuevo.',
-    'eliminado' => 'El banco se ha eliminado correctamente.',
+    'eliminado' => 'El banco se ha eliminado de la lista. Su historial se ha conservado.',
     'saldo_no_cero' => 'No puedes eliminar un banco que tenga saldo distinto de 0,00 €.',
 ];
 
@@ -48,6 +48,7 @@ try {
         LEFT JOIN movimientos_bancos m
             ON m.banco_id = b.id
         WHERE b.usuario_id = ?
+          AND b.eliminado = 0
         GROUP BY
             b.id,
             b.nombre,

@@ -3155,6 +3155,43 @@ a {
     font-size: 0.88rem;
 }
 
+.registro-etiqueta-tipo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 7px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.registro-etiqueta-tipo-ingreso {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.registro-etiqueta-tipo-gasto {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.registro-etiqueta-tipo-ahorro {
+    background: #cffafe;
+    color: #155e75;
+}
+
+.registro-etiqueta-tipo-inversion {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.registro-etiqueta-tipo-traspaso {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
 .registro-tabla td[data-label="Cantidad"] {
     font-weight: 600;
     white-space: nowrap;
@@ -3237,6 +3274,31 @@ a {
     border-color: var(--color-borde, #4b5563);
     background: #1f2937;
     color: #e5e7eb;
+}
+
+.modo-oscuro .registro-etiqueta-tipo-ingreso {
+    background: #183b28;
+    color: #86efac;
+}
+
+.modo-oscuro .registro-etiqueta-tipo-gasto {
+    background: #482525;
+    color: #fda29b;
+}
+
+.modo-oscuro .registro-etiqueta-tipo-ahorro {
+    background: #123746;
+    color: #67e8f9;
+}
+
+.modo-oscuro .registro-etiqueta-tipo-inversion {
+    background: #44351a;
+    color: #fcd34d;
+}
+
+.modo-oscuro .registro-etiqueta-tipo-traspaso {
+    background: #292d50;
+    color: #a5b4fc;
 }
 
 /* Paleta de Categorías y Objetivos en modo oscuro */
@@ -3835,5 +3897,269 @@ a {
 
     .presupuestos-panel-formulario {
         position: static;
+    }
+}
+
+/* Cuenta */
+
+.cuenta-contenedor {
+    width: 100%;
+    min-width: 0;
+    color: var(--color-texto, #172033);
+}
+
+.cuenta-cabecera {
+    margin-bottom: 24px;
+}
+
+.cuenta-cabecera h1 {
+    margin: 0 0 6px;
+    font-size: 1.8rem;
+}
+
+.cuenta-cabecera p {
+    margin: 0;
+    color: var(--color-secundario, #687386);
+}
+
+.cuenta-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+    align-items: start;
+    gap: 22px;
+}
+
+.cuenta-card {
+    min-width: 0;
+    padding: 22px;
+    border: 1px solid var(--color-borde, #dce3ed);
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 3px 14px rgb(23 32 51 / 5%);
+}
+
+.cuenta-card-cabecera {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.cuenta-card-cabecera h2 {
+    margin: 0 0 5px;
+    font-size: 1.1rem;
+}
+
+.cuenta-card-cabecera p {
+    margin: 0;
+    color: var(--color-secundario, #687386);
+    font-size: 0.84rem;
+}
+
+.cuenta-icono {
+    display: grid;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border-radius: 12px;
+    background: #e8efff;
+    color: #2463eb;
+    font-size: 1.2rem;
+}
+
+.cuenta-icono-preferencias {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.cuenta-email {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 15px;
+    border: 1px solid var(--color-borde, #dce3ed);
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.cuenta-email span {
+    color: var(--color-secundario, #687386);
+    font-size: 0.82rem;
+}
+
+.cuenta-email strong {
+    overflow-wrap: anywhere;
+    color: var(--color-texto, #172033);
+    font-size: 0.95rem;
+}
+
+.cuenta-formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 0;
+}
+
+.cuenta-formulario-password {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-borde, #e5eaf1);
+}
+
+.cuenta-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.cuenta-campo label {
+    color: var(--color-texto, #172033);
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+.cuenta-campo input,
+.cuenta-campo select {
+    width: 100%;
+    min-height: 43px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-borde, #dce3ed);
+    border-radius: 9px;
+    background: #fff;
+    color: var(--color-texto, #172033);
+    font: inherit;
+}
+
+.cuenta-campo input:focus,
+.cuenta-campo select:focus {
+    outline: 2px solid #93b4ff;
+    outline-offset: 1px;
+}
+
+.cuenta-ayuda {
+    margin: -3px 0 0;
+    color: var(--color-secundario, #687386);
+    font-size: 0.81rem;
+    line-height: 1.5;
+}
+
+.cuenta-btn-principal,
+.cuenta-btn-secundario {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 10px 15px;
+    border: 1px solid var(--color-principal, #2463eb);
+    border-radius: 9px;
+    background: var(--color-principal, #2463eb);
+    color: #fff;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cuenta-btn-principal:hover,
+.cuenta-btn-secundario:hover {
+    border-color: var(--color-principal-hover, #1d4ed8);
+    background: var(--color-principal-hover, #1d4ed8);
+}
+
+.cuenta-btn-principal {
+    width: 100%;
+}
+
+.cuenta-btn-secundario {
+    align-self: flex-start;
+}
+
+.cuenta-alerta {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding: 12px 14px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.cuenta-alerta-exito {
+    border-color: #b7e4c7;
+    background: #effaf2;
+    color: #166534;
+}
+
+.cuenta-alerta-error {
+    border-color: #f1c4c4;
+    background: #fff1f1;
+    color: #b42318;
+}
+
+.cuenta-login-mensaje {
+    padding: 12px 14px;
+    border: 1px solid #b7e4c7;
+    border-radius: 9px;
+    background: #effaf2;
+    color: #166534;
+}
+
+.modo-oscuro .cuenta-card {
+    border-color: var(--color-borde, #374151);
+    background: #1f2937;
+}
+
+.modo-oscuro .cuenta-icono {
+    background: #263a60;
+    color: #a9c4ff;
+}
+
+.modo-oscuro .cuenta-icono-preferencias {
+    background: #123746;
+    color: #67e8f9;
+}
+
+.modo-oscuro .cuenta-email {
+    border-color: var(--color-borde, #374151);
+    background: #18212f;
+}
+
+.modo-oscuro .cuenta-email strong,
+.modo-oscuro .cuenta-campo label {
+    color: #f3f4f6;
+}
+
+.modo-oscuro .cuenta-formulario-password {
+    border-color: var(--color-borde, #374151);
+}
+
+.modo-oscuro .cuenta-campo input,
+.modo-oscuro .cuenta-campo select {
+    border-color: var(--color-borde, #374151);
+    background: #111827;
+    color: #f3f4f6;
+    color-scheme: dark;
+}
+
+.modo-oscuro .cuenta-alerta-exito,
+.modo-oscuro .cuenta-login-mensaje {
+    border-color: #28583a;
+    background: #183b28;
+    color: #a8e6bb;
+}
+
+.modo-oscuro .cuenta-alerta-error {
+    border-color: #713333;
+    background: #482525;
+    color: #ffb3b3;
+}
+
+@media (max-width: 760px) {
+    .cuenta-layout {
+        grid-template-columns: minmax(0, 1fr);
     }
 }

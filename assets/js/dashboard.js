@@ -9,6 +9,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const iconoModo = document.getElementById('icono-modo');
     const textoModo = document.getElementById('texto-modo');
 
+    function actualizarControlesModo(modoOscuro) {
+        if (botonModo) {
+            botonModo.setAttribute('aria-pressed', String(modoOscuro));
+            botonModo.title = modoOscuro
+                ? 'Cambiar a modo claro'
+                : 'Cambiar a modo oscuro';
+        }
+
+        if (iconoModo) {
+            iconoModo.innerHTML = modoOscuro
+                ? '<i class="bi bi-sun" aria-hidden="true"></i>'
+                : '<i class="bi bi-moon" aria-hidden="true"></i>';
+        }
+
+        if (textoModo) {
+            textoModo.textContent = modoOscuro ? 'Modo claro' : 'Modo oscuro';
+        }
+
+        if (logoAplicacion) {
+            logoAplicacion.src = modoOscuro
+                ? 'assets/img/logo_claro.png'
+                : 'assets/img/logo_oscuro.png';
+        }
+    }
+
     const botonOcultar = document.getElementById('boton-ocultar');
     const iconoOcultar = document.getElementById('icono-ocultar');
     const textoOcultar = document.getElementById('texto-ocultar');
@@ -55,28 +80,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Cambiar entre modo claro y oscuro.
     if (botonModo) {
+        actualizarControlesModo(document.body.classList.contains('modo-oscuro'));
+
         botonModo.addEventListener('click', () => {
             const modoOscuro = document.body.classList.toggle('modo-oscuro');
+            actualizarControlesModo(modoOscuro);
 
-            botonModo.setAttribute('aria-pressed', String(modoOscuro));
+            const formulario = document.createElement('form');
+            formulario.method = 'POST';
+            formulario.action = 'cuenta_acciones.php';
+            formulario.hidden = true;
 
-            if (iconoModo) {
-                iconoModo.innerHTML = modoOscuro
-                    ? '<i class="bi bi-sun" aria-hidden="true"></i>'
-                    : '<i class="bi bi-moon" aria-hidden="true"></i>';
-            }
+            const seccionActiva = document.querySelector(
+                '.dashboard-seccion.activa'
+            );
+            const parametrosURL = new URLSearchParams(window.location.search);
+            const seccion = seccionActiva?.id.replace('seccion-', '')
+                || parametrosURL.get('seccion')
+                || 'resumen';
+            const campos = {
+                csrf_token: document.body.dataset.csrfToken || '',
+                accion: 'modo',
+                preferencia_modo: modoOscuro ? 'oscuro' : 'claro',
+                volver_seccion: seccion
+            };
 
-            if (textoModo) {
-                textoModo.textContent = modoOscuro
-                    ? 'Modo claro'
-                    : 'Modo oscuro';
-            }
+            Object.entries(campos).forEach(([nombre, valor]) => {
+                const campo = document.createElement('input');
+                campo.type = 'hidden';
+                campo.name = nombre;
+                campo.value = valor;
+                formulario.appendChild(campo);
+            });
 
-            if (logoAplicacion) {
-                logoAplicacion.src = modoOscuro
-                    ? 'assets/img/logo_claro.png'
-                    : 'assets/img/logo_oscuro.png';
-            }
+            document.body.appendChild(formulario);
+            formulario.submit();
         });
     }
 

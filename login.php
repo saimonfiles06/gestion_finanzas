@@ -12,6 +12,8 @@ require_once 'includes/conexion.php';
 $error = '';
 $email = '';
 $loginExitoso = false;
+$mensajeLogin = $_SESSION['login_mensaje'] ?? '';
+unset($_SESSION['login_mensaje']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
@@ -24,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             $consulta = $conexion->prepare(
-                'SELECT id, email, password
+                'SELECT id, email, password, preferencia_modo
                  FROM usuarios
                  WHERE email = ?'
             );
@@ -40,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $_SESSION['usuario_id'] = $usuario['id'];
                 $_SESSION['usuario_email'] = $usuario['email'];
+                $_SESSION['preferencia_modo'] = $usuario['preferencia_modo'];
 
                 $loginExitoso = true;
             } else {
@@ -90,6 +93,12 @@ function escapar(string $valor): string {
             <?php if ($error !== ''): ?>
                 <p class="mensaje error" role="alert">
                     <?= escapar($error) ?>
+                </p>
+            <?php endif; ?>
+
+            <?php if ($mensajeLogin !== ''): ?>
+                <p class="mensaje cuenta-login-mensaje" role="status">
+                    <?= escapar($mensajeLogin) ?>
                 </p>
             <?php endif; ?>
 

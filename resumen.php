@@ -453,6 +453,7 @@ $consultaBancos = $conexion->prepare(
     'SELECT id, nombre
      FROM bancos
      WHERE usuario_id = :usuario_id
+       AND eliminado = 0
      ORDER BY nombre ASC'
 );
 
