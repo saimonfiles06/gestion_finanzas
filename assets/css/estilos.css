@@ -2741,3 +2741,256 @@ a {
         height: 280px;
     }
 }
+
+/* Ingresos y gastos */
+
+.ingresos-gastos-contenedor {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 100%;
+    min-width: 0;
+}
+
+.ingresos-gastos-barra-superior {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.ingresos-gastos-filtros {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0;
+}
+
+.ingresos-gastos-filtros label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 160px;
+    color: var(--color-texto, #172033);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.ingresos-gastos-filtros select {
+    width: 100%;
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid var(--color-borde, #dce3ed);
+    border-radius: 9px;
+    background: #fff;
+    color: var(--color-texto, #172033);
+    font: inherit;
+}
+
+.ingresos-gastos-filtros select:focus {
+    outline: 2px solid var(--color-principal, #2463eb);
+    outline-offset: 1px;
+}
+
+.ingresos-gastos-titulo {
+    margin: 0;
+    color: var(--color-texto, #172033);
+    font-size: 1.25rem;
+}
+
+.ingresos-gastos-medias,
+.ingresos-gastos-tarjetas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.ingresos-gastos-media,
+.ingresos-gastos-tarjeta {
+    min-width: 0;
+    padding: 22px;
+    border: 1px solid var(--color-borde, #dce3ed);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 18px rgb(23 32 51 / 5%);
+}
+
+.ingresos-gastos-media {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.ingresos-gastos-media > span {
+    color: var(--color-secundario, #687386);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.ingresos-gastos-media > strong {
+    font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+    font-variant-numeric: tabular-nums;
+}
+
+.ingresos-gastos-positivo {
+    color: #15803d;
+}
+
+.ingresos-gastos-negativo {
+    color: #c2413a;
+}
+
+.ingresos-gastos-tarjeta-cabecera {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--color-borde, #dce3ed);
+}
+
+.ingresos-gastos-tarjeta-cabecera h2 {
+    margin: 0;
+    color: var(--color-texto, #172033);
+    font-size: 1.1rem;
+}
+
+.ingresos-gastos-tarjeta-cabecera strong {
+    font-size: 1.35rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.ingresos-gastos-tarjeta-ingreso .ingresos-gastos-tarjeta-cabecera strong {
+    color: #15803d;
+}
+
+.ingresos-gastos-tarjeta-gasto .ingresos-gastos-tarjeta-cabecera strong {
+    color: #c2413a;
+}
+
+.ingresos-gastos-categorias {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ingresos-gastos-categorias li {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.ingresos-gastos-categoria-detalle {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--color-texto, #172033);
+    font-size: 0.9rem;
+}
+
+.ingresos-gastos-categoria-detalle span {
+    overflow-wrap: anywhere;
+}
+
+.ingresos-gastos-categoria-detalle strong {
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.ingresos-gastos-progreso {
+    height: 9px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e8edf4;
+}
+
+.ingresos-gastos-progreso span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+}
+
+.ingresos-gastos-tarjeta-ingreso .ingresos-gastos-progreso span {
+    background: #16a34a;
+}
+
+.ingresos-gastos-tarjeta-gasto .ingresos-gastos-progreso span {
+    background: #dc2626;
+}
+
+.ingresos-gastos-categorias small {
+    color: var(--color-secundario, #687386);
+    font-size: 0.78rem;
+}
+
+.ingresos-gastos-vacio {
+    margin: 20px 0 0;
+    color: var(--color-secundario, #687386);
+    font-size: 0.9rem;
+}
+
+.modo-oscuro .ingresos-gastos-filtros label {
+    color: var(--color-texto, #f3f4f6);
+}
+
+.modo-oscuro .ingresos-gastos-filtros select {
+    border-color: var(--color-borde, #374151);
+    background: #1f2937;
+    color: var(--color-texto, #f3f4f6);
+    color-scheme: dark;
+}
+
+.modo-oscuro .ingresos-gastos-media,
+.modo-oscuro .ingresos-gastos-tarjeta {
+    border-color: var(--color-borde, #374151);
+    background: #1f2937;
+}
+
+.modo-oscuro .ingresos-gastos-tarjeta-cabecera {
+    border-color: var(--color-borde, #374151);
+}
+
+.modo-oscuro .ingresos-gastos-positivo {
+    color: #86efac;
+}
+
+.modo-oscuro .ingresos-gastos-negativo {
+    color: #fda29b;
+}
+
+.modo-oscuro .ingresos-gastos-tarjeta-ingreso .ingresos-gastos-tarjeta-cabecera strong {
+    color: #86efac;
+}
+
+.modo-oscuro .ingresos-gastos-tarjeta-gasto .ingresos-gastos-tarjeta-cabecera strong {
+    color: #fda29b;
+}
+
+.modo-oscuro .ingresos-gastos-progreso {
+    background: #374151;
+}
+
+@media (max-width: 700px) {
+    .ingresos-gastos-medias,
+    .ingresos-gastos-tarjetas {
+        grid-template-columns: 1fr;
+    }
+
+    .ingresos-gastos-barra-superior {
+        align-items: stretch;
+    }
+
+    .ingresos-gastos-filtros {
+        width: 100%;
+    }
+
+    .ingresos-gastos-filtros label {
+        flex: 1;
+    }
+}

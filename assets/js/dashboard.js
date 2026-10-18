@@ -112,6 +112,84 @@ document.addEventListener('DOMContentLoaded', () => {
     const seccionInicial = parametrosURL.get('seccion') || 'resumen';
 
     mostrarSeccion(seccionInicial);
+
+    const abrirRegistro = parametrosURL.get('abrir') === 'registro';
+    const botonCrearRegistroResumen = document.getElementById(
+        'btn-crear-registro'
+    );
+    const panelCrearRegistro = document.getElementById('panel-crear-registro');
+    const seccionResumen = document.getElementById('seccion-resumen');
+    let seccionDestinoRegistro = null;
+
+    if (botonCrearRegistroResumen) {
+        botonCrearRegistroResumen.addEventListener('click', () => {
+            const destino = seccionDestinoRegistro || seccionResumen;
+            const barraSuperior = destino?.querySelector(
+                destino === seccionResumen
+                    ? '.resumen-barra-superior'
+                    : '.ingresos-gastos-barra-superior'
+            );
+
+            if (barraSuperior && panelCrearRegistro) {
+                barraSuperior.after(panelCrearRegistro);
+            }
+
+            seccionDestinoRegistro = null;
+        });
+    }
+
+    if (abrirRegistro && botonCrearRegistroResumen) {
+        botonCrearRegistroResumen.click();
+    }
+
+    const botonCrearRegistroIngresosGastos = document.getElementById(
+        'btn-crear-registro-ingresos-gastos'
+    );
+    const seccionIngresosGastos = document.getElementById(
+        'seccion-ingresos-gastos'
+    );
+
+    if (
+        botonCrearRegistroIngresosGastos
+        && botonCrearRegistroResumen
+        && seccionIngresosGastos
+    ) {
+        botonCrearRegistroIngresosGastos.addEventListener('click', () => {
+            seccionDestinoRegistro = seccionIngresosGastos;
+            botonCrearRegistroResumen.click();
+        });
+    }
+
+    const filtrosIngresosGastos = document.getElementById(
+        'filtros-ingresos-gastos'
+    );
+    const rangoIngresosGastos = document.getElementById(
+        'rango-ingresos-gastos'
+    );
+    const periodoIngresosGastos = document.getElementById(
+        'periodo-ingresos-gastos'
+    );
+
+    if (filtrosIngresosGastos && rangoIngresosGastos && periodoIngresosGastos) {
+        rangoIngresosGastos.addEventListener('change', () => {
+            const anios = JSON.parse(periodoIngresosGastos.dataset.anios || '[]');
+            const periodos = JSON.parse(
+                periodoIngresosGastos.dataset.periodos || '[]'
+            );
+
+            if (rangoIngresosGastos.value === 'anual') {
+                periodoIngresosGastos.value = anios[0] || '';
+            } else {
+                periodoIngresosGastos.value = periodos[0] || '';
+            }
+
+            filtrosIngresosGastos.requestSubmit();
+        });
+
+        periodoIngresosGastos.addEventListener('change', () => {
+            filtrosIngresosGastos.requestSubmit();
+        });
+    }
 });
 
 window.editarCategoria = (categoriaId, nombreActual, tipo) => {
