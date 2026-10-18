@@ -185,6 +185,12 @@ if (empty($_SESSION['csrf_token'])) {
                 hidden>
                 <?php require __DIR__ . '/ingresos_gastos.php'; ?>
             </section>
+            <section
+                id="seccion-registro"
+                class="dashboard-seccion"
+                hidden>
+                <?php require __DIR__ . '/registros.php'; ?>
+            </section>
             <section id="seccion-categorias" class="dashboard-seccion" hidden>
                 <?php require __DIR__ . '/categorias.php'; ?>
             </section>

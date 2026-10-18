@@ -13,8 +13,22 @@ $usuarioId = (int) $_SESSION['usuario_id'];
 
 function volverConMensaje(string $mensaje): never
 {
-    $_SESSION['mensaje_resumen'] = $mensaje;
-    header('Location: dashboard.php?seccion=resumen');
+    if (($_POST['volver_a_registro'] ?? '') === '1') {
+        $_SESSION['mensaje_registro'] = $mensaje;
+        $query = ['seccion' => 'registro'];
+        $rango = $_POST['rango'] ?? '';
+        $periodo = $_POST['periodo'] ?? '';
+        if (is_string($rango) && in_array($rango, ['mensual', 'anual'], true)) {
+            $query['rango'] = $rango;
+        }
+        if (is_string($periodo) && preg_match('/^\d{4}(-\d{2})?$/', $periodo)) {
+            $query['periodo'] = $periodo;
+        }
+        header('Location: dashboard.php?' . http_build_query($query));
+    } else {
+        $_SESSION['mensaje_resumen'] = $mensaje;
+        header('Location: dashboard.php?seccion=resumen');
+    }
     exit;
 }
 

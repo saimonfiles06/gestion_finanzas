@@ -2763,6 +2763,7 @@ a {
 .ingresos-gastos-filtros {
     display: flex;
     align-items: flex-end;
+    flex-direction: row;
     flex-wrap: wrap;
     gap: 12px;
     margin: 0;
@@ -2773,6 +2774,7 @@ a {
     flex-direction: column;
     gap: 6px;
     min-width: 160px;
+    margin-top: 0;
     color: var(--color-texto, #172033);
     font-size: 0.9rem;
     font-weight: 600;
@@ -2993,4 +2995,386 @@ a {
     .ingresos-gastos-filtros label {
         flex: 1;
     }
+}
+
+/* Registro de operaciones */
+
+.registro-contenedor {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    min-width: 0;
+}
+
+.registro-barra-superior {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.registro-periodo-filtros,
+.registro-filtros-listado {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0;
+}
+
+.registro-periodo-filtros label,
+.registro-filtros-listado label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+    color: var(--color-texto, #172033);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.registro-periodo-filtros label {
+    margin-top: 0;
+}
+
+.registro-periodo-filtros select,
+.registro-filtros-listado select {
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid var(--color-borde, #dce3ed);
+    border-radius: 9px;
+    background: #fff;
+    color: var(--color-texto, #172033);
+    font: inherit;
+}
+
+.registro-periodo-filtros select:focus,
+.registro-filtros-listado select:focus {
+    outline: 2px solid var(--color-principal, #2463eb);
+    outline-offset: 1px;
+}
+
+.registro-tarjeta {
+    min-width: 0;
+    padding: 22px;
+    border: 1px solid var(--color-borde, #dce3ed);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 18px rgb(23 32 51 / 5%);
+}
+
+.registro-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.registro-cabecera h1 {
+    margin: 0 0 5px;
+    color: var(--color-texto, #172033);
+    font-size: 1.25rem;
+}
+
+.registro-cabecera p,
+.registro-cabecera > span {
+    margin: 0;
+    color: var(--color-secundario, #687386);
+    font-size: 0.9rem;
+}
+
+.registro-cabecera > span {
+    flex-shrink: 0;
+    font-weight: 600;
+}
+
+.registro-filtros-listado {
+    align-items: flex-end;
+    flex-direction: row;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.registro-filtros-listado label {
+    flex: 1 1 150px;
+    min-width: 150px;
+}
+
+.registro-filtros-listado > button {
+    align-self: flex-end;
+}
+
+.registro-tabla-contenedor {
+    overflow-x: auto;
+    border: 1px solid var(--color-borde, #dce3ed);
+    border-radius: 10px;
+}
+
+.registro-tabla {
+    width: 100%;
+    min-width: 1040px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.registro-tabla th,
+.registro-tabla td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--color-borde, #e5eaf1);
+    color: var(--color-texto, #172033);
+    vertical-align: middle;
+}
+
+.registro-tabla th {
+    background: #f6f8fb;
+    font-size: 0.83rem;
+    white-space: nowrap;
+}
+
+.registro-tabla th a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.registro-tabla th a:hover {
+    color: var(--color-principal, #2463eb);
+}
+
+.registro-tabla tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.registro-tabla td {
+    font-size: 0.88rem;
+}
+
+.registro-tabla td[data-label="Cantidad"] {
+    font-weight: 600;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.registro-acciones {
+    white-space: nowrap;
+}
+
+.registro-acciones form {
+    display: inline;
+}
+
+.registro-accion {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    margin-right: 4px;
+    border: 1px solid var(--color-borde, #dce3ed);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--color-texto, #334155);
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.registro-accion:hover {
+    border-color: var(--color-principal, #2463eb);
+    color: var(--color-principal, #2463eb);
+}
+
+.registro-accion-borrar:hover {
+    border-color: #dc2626;
+    color: #dc2626;
+}
+
+.registro-vacio {
+    padding: 30px !important;
+    color: var(--color-secundario, #687386) !important;
+    text-align: center;
+}
+
+.modo-oscuro .registro-periodo-filtros label,
+.modo-oscuro .registro-filtros-listado label {
+    color: var(--color-texto, #f3f4f6);
+}
+
+.modo-oscuro .registro-periodo-filtros select,
+.modo-oscuro .registro-filtros-listado select {
+    border-color: var(--color-borde, #374151);
+    background: #1f2937;
+    color: var(--color-texto, #f3f4f6);
+    color-scheme: dark;
+}
+
+.modo-oscuro .registro-tarjeta {
+    border-color: var(--color-borde, #374151);
+    background: #1f2937;
+}
+
+.modo-oscuro .registro-cabecera h1,
+.modo-oscuro .registro-tabla th,
+.modo-oscuro .registro-tabla td {
+    color: var(--color-texto, #f3f4f6);
+}
+
+.modo-oscuro .registro-tabla-contenedor,
+.modo-oscuro .registro-tabla th,
+.modo-oscuro .registro-tabla td {
+    border-color: var(--color-borde, #374151);
+}
+
+.modo-oscuro .registro-tabla th {
+    background: #18212f;
+}
+
+.modo-oscuro .registro-accion {
+    border-color: var(--color-borde, #4b5563);
+    background: #1f2937;
+    color: #e5e7eb;
+}
+
+/* Paleta de Categorías y Objetivos en modo oscuro */
+
+.modo-oscuro .categorias-contenedor {
+    --texto-principal: #f3f4f6;
+    --texto-secundario: #a8b2c3;
+    --fondo-tarjeta: #1f2937;
+    --fondo-secundario: #273449;
+    --borde: #374151;
+    color: var(--texto-principal);
+}
+
+.modo-oscuro .categorias-alerta-exito {
+    border-color: #28583a;
+    background: #183b28;
+    color: #a8e6bb;
+}
+
+.modo-oscuro .categorias-alerta-error {
+    border-color: #713333;
+    background: #482525;
+    color: #ffb3b3;
+}
+
+.modo-oscuro .categorias-icono-ingresos,
+.modo-oscuro .categorias-tipo-ingreso {
+    background: #183b28;
+    color: #86efac;
+}
+
+.modo-oscuro .categorias-icono-gastos,
+.modo-oscuro .categorias-tipo-gasto {
+    background: #482525;
+    color: #fda29b;
+}
+
+.modo-oscuro .categorias-icono-nueva {
+    background: #263a60;
+    color: #a9c4ff;
+}
+
+.modo-oscuro .categorias-campo input,
+.modo-oscuro .categorias-campo select {
+    border-color: var(--color-borde, #374151);
+    background: #111827;
+    color: var(--color-texto, #f3f4f6);
+    color-scheme: dark;
+}
+
+.modo-oscuro .categorias-campo input::placeholder {
+    color: #8792a3;
+    opacity: 1;
+}
+
+.modo-oscuro .categorias-btn-editar:hover {
+    border-color: #3b5680;
+    background: #263a60;
+    color: #a9c4ff;
+}
+
+.modo-oscuro .categorias-btn-eliminar:hover {
+    border-color: #713333;
+    background: #482525;
+    color: #fda29b;
+}
+
+.modo-oscuro .objetivo-card,
+.modo-oscuro .objetivos-panel-formulario {
+    border-color: var(--color-borde, #374151);
+    background: #1f2937;
+}
+
+.modo-oscuro .objetivo-card-fondo {
+    border-color: rgb(74 222 128 / 35%);
+}
+
+.modo-oscuro .objetivo-icono,
+.modo-oscuro .objetivos-icono-nuevo {
+    background: #263a60;
+    color: #a9c4ff;
+}
+
+.modo-oscuro .objetivo-icono-fondo,
+.modo-oscuro .objetivo-etiqueta {
+    background: #183b28;
+    color: #86efac;
+}
+
+.modo-oscuro .objetivo-btn-eliminar {
+    border-color: #713333;
+    background: #351f26;
+    color: #fda29b;
+}
+
+.modo-oscuro .objetivo-btn-eliminar:hover {
+    border-color: #9b3d3d;
+    background: #482525;
+}
+
+.modo-oscuro .objetivo-barra-fondo {
+    background: #374151;
+}
+
+.modo-oscuro .objetivo-card-fondo .objetivo-barra {
+    background: #4ade80;
+}
+
+.modo-oscuro .objetivo-campo input,
+.modo-oscuro .objetivo-campo select {
+    border-color: var(--color-borde, #374151);
+    background: #111827;
+    color: var(--color-texto, #f3f4f6);
+    color-scheme: dark;
+}
+
+.modo-oscuro .objetivo-campo input:disabled {
+    background: #18212f;
+    color: #8792a3;
+}
+
+.modo-oscuro .objetivo-campo input::placeholder {
+    color: #8792a3;
+    opacity: 1;
+}
+
+.modo-oscuro .objetivo-gestion {
+    border-color: var(--color-borde, #374151);
+}
+
+.modo-oscuro .objetivos-alerta-exito {
+    border-color: #28583a;
+    background: #183b28;
+    color: #a8e6bb;
+}
+
+.modo-oscuro .objetivos-alerta-error {
+    border-color: #713333;
+    background: #482525;
+    color: #ffb3b3;
 }

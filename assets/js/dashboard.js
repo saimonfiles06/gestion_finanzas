@@ -124,11 +124,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (botonCrearRegistroResumen) {
         botonCrearRegistroResumen.addEventListener('click', () => {
             const destino = seccionDestinoRegistro || seccionResumen;
-            const barraSuperior = destino?.querySelector(
-                destino === seccionResumen
-                    ? '.resumen-barra-superior'
-                    : '.ingresos-gastos-barra-superior'
-            );
+            const claseBarra = destino === seccionResumen
+                ? '.resumen-barra-superior'
+                : destino?.id === 'seccion-registro'
+                    ? '.registro-barra-superior'
+                    : '.ingresos-gastos-barra-superior';
+            const barraSuperior = destino?.querySelector(claseBarra);
 
             if (barraSuperior && panelCrearRegistro) {
                 barraSuperior.after(panelCrearRegistro);
@@ -156,6 +157,21 @@ document.addEventListener('DOMContentLoaded', () => {
     ) {
         botonCrearRegistroIngresosGastos.addEventListener('click', () => {
             seccionDestinoRegistro = seccionIngresosGastos;
+            botonCrearRegistroResumen.click();
+        });
+    }
+
+    const botonCrearRegistroListado = document.getElementById(
+        'btn-crear-registro-listado'
+    );
+    const seccionRegistro = document.getElementById('seccion-registro');
+    if (
+        botonCrearRegistroListado
+        && botonCrearRegistroResumen
+        && seccionRegistro
+    ) {
+        botonCrearRegistroListado.addEventListener('click', () => {
+            seccionDestinoRegistro = seccionRegistro;
             botonCrearRegistroResumen.click();
         });
     }
@@ -190,6 +206,70 @@ document.addEventListener('DOMContentLoaded', () => {
             filtrosIngresosGastos.requestSubmit();
         });
     }
+
+    const formularioPeriodoRegistro = document.getElementById(
+        'filtros-periodo-registro'
+    );
+    const rangoPeriodoRegistro = document.getElementById(
+        'rango-periodo-registro'
+    );
+    const periodoRegistro = document.getElementById('periodo-registro');
+    if (formularioPeriodoRegistro && rangoPeriodoRegistro && periodoRegistro) {
+        rangoPeriodoRegistro.addEventListener('change', () => {
+            const periodos = JSON.parse(periodoRegistro.dataset.periodos || '[]');
+            const anios = JSON.parse(periodoRegistro.dataset.anios || '[]');
+            const mensual = rangoPeriodoRegistro.value === 'mensual';
+            const opciones = mensual
+                ? periodos
+                : anios;
+
+            periodoRegistro.replaceChildren();
+            opciones.forEach((periodo) => {
+                const opcion = document.createElement('option');
+                opcion.value = periodo;
+                if (mensual) {
+                    const nombresMeses = [
+                        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre',
+                        'Diciembre'
+                    ];
+                    const [anio, mes] = periodo.split('-');
+                    opcion.textContent =
+                        nombresMeses[Number(mes) - 1] + ' de ' + anio;
+                } else {
+                    opcion.textContent = periodo;
+                }
+                periodoRegistro.appendChild(opcion);
+            });
+            formularioPeriodoRegistro.requestSubmit();
+        });
+        periodoRegistro.addEventListener('change', () => {
+            formularioPeriodoRegistro.requestSubmit();
+        });
+    }
+
+    const formularioFiltrosRegistro = document.getElementById(
+        'filtros-listado-registro'
+    );
+    if (formularioFiltrosRegistro) {
+        formularioFiltrosRegistro.querySelectorAll('select').forEach((filtro) => {
+            filtro.addEventListener('change', () => {
+                formularioFiltrosRegistro.requestSubmit();
+            });
+        });
+    }
+
+    document.querySelectorAll('[data-accion-registro][data-registro]').forEach(
+        (boton) => {
+            boton.addEventListener('click', () => {
+                const registro = JSON.parse(boton.dataset.registro);
+                const preparar = window.prepararFormularioRegistro;
+                if (typeof preparar === 'function') {
+                    preparar(registro, boton.dataset.accionRegistro);
+                }
+            });
+        }
+    );
 });
 
 window.editarCategoria = (categoriaId, nombreActual, tipo) => {
@@ -278,6 +358,12 @@ window.editarCategoria = (categoriaId, nombreActual, tipo) => {
 
     const mensaje = document.getElementById('mensaje-registro');
     const descripcionFormulario = document.getElementById('descripcion-formulario-registro');
+    const encabezadoFormulario = panel?.querySelector(
+        '.formulario-registro-encabezado h3'
+    );
+    const botonGuardar = formulario?.querySelector(
+        '.btn-guardar-registro'
+    );
 
     const filtroRango = document.getElementById('filtro-rango');
     const filtroPeriodo = document.getElementById('filtro-periodo');
@@ -300,6 +386,95 @@ window.editarCategoria = (categoriaId, nombreActual, tipo) => {
     }
 
     formulario.dataset.inicializado = 'true';
+
+    const formularioRegistroAccion = {
+        modo: 'crear',
+        campos: []
+    };
+
+    function limpiarModoRegistro() {
+        formularioRegistroAccion.campos.forEach((campo) => campo.remove());
+        formularioRegistroAccion.campos = [];
+        formularioRegistroAccion.modo = 'crear';
+        formulario.action = 'guardar_registro.php';
+        tipoRegistro.disabled = false;
+        formulario.reset();
+        actualizarFormulario();
+        encabezadoFormulario.textContent = 'Crear registro';
+        botonGuardar.textContent = 'Guardar registro';
+    }
+
+    function configurarRetornoRegistro() {
+        const parametros = new URLSearchParams(window.location.search);
+        agregarCampoOculto('volver_a_registro', '1');
+        agregarCampoOculto('rango', parametros.get('rango') || 'mensual');
+        agregarCampoOculto('periodo', parametros.get('periodo') || '');
+    }
+
+    function agregarCampoOculto(nombre, valor) {
+        const campo = document.createElement('input');
+        campo.type = 'hidden';
+        campo.name = nombre;
+        campo.value = valor == null ? '' : String(valor);
+        formulario.appendChild(campo);
+        formularioRegistroAccion.campos.push(campo);
+    }
+
+    window.prepararFormularioRegistro = (registro, accion) => {
+        limpiarModoRegistro();
+        const seccionActual = document.querySelector(
+            '.dashboard-seccion.activa'
+        );
+        const barraSuperior = seccionActual?.querySelector(
+            seccionActual.id === 'seccion-registro'
+                ? '.registro-barra-superior'
+                : seccionActual.id === 'seccion-ingresos-gastos'
+                    ? '.ingresos-gastos-barra-superior'
+                    : '.resumen-barra-superior'
+        );
+        const botonCrearRegistro = document.getElementById('btn-crear-registro');
+        if (barraSuperior && panel && botonCrearRegistro) {
+            barraSuperior.after(panel);
+            panel.hidden = false;
+            botonCrearRegistro.setAttribute('aria-expanded', 'true');
+            mensaje.hidden = true;
+            mensaje.textContent = '';
+        }
+        if (seccionActual?.id === 'seccion-registro') {
+            configurarRetornoRegistro();
+        }
+
+        if (accion === 'editar') {
+            formularioRegistroAccion.modo = 'editar';
+            formulario.action = 'registro_acciones.php';
+            tipoRegistro.disabled = true;
+            agregarCampoOculto('accion', 'editar');
+            agregarCampoOculto('origen', registro.origen);
+            agregarCampoOculto('id', registro.id);
+            agregarCampoOculto('movimiento_id', registro.movimiento_id);
+            agregarCampoOculto(
+                'movimiento_destino_id',
+                registro.movimiento_destino_id
+            );
+            agregarCampoOculto('tipo', registro.tipo);
+            encabezadoFormulario.textContent = 'Editar registro';
+            botonGuardar.textContent = 'Guardar cambios';
+        } else {
+            encabezadoFormulario.textContent = 'Copiar registro';
+        }
+
+        tipoRegistro.value = registro.tipo;
+        tipoRegistro.dispatchEvent(new Event('change'));
+        fechaRegistro.value = registro.fecha;
+        cantidadRegistro.value = registro.importe;
+        observaciones.value = registro.observaciones || '';
+        categoriaRegistro.value = registro.categoria_id || '';
+        objetivoRegistro.value = registro.objetivo_id || '';
+        bancoRegistro.value = registro.banco_origen_id || '';
+        bancoOrigen.value = registro.banco_origen_id || '';
+        bancoDestino.value = registro.banco_destino_id || '';
+        actualizarOpcionesBancos();
+    };
 
     const grupos = Array.from(
         formulario.querySelectorAll('[data-grupo]')
@@ -515,11 +690,19 @@ window.editarCategoria = (categoriaId, nombreActual, tipo) => {
     function cerrarFormulario() {
         panel.hidden = true;
         botonCrear.setAttribute('aria-expanded', 'false');
+        limpiarModoRegistro();
     }
 
     botonCrear.addEventListener('click', function () {
         if (panel.hidden) {
+            limpiarModoRegistro();
             abrirFormulario();
+            if (
+                document.querySelector('.dashboard-seccion.activa')?.id
+                === 'seccion-registro'
+            ) {
+                configurarRetornoRegistro();
+            }
         } else {
             cerrarFormulario();
         }
