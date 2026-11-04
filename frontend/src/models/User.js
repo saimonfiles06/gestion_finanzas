@@ -12,7 +12,7 @@ export class User {
 		this.fecha_registro = fecha_registro;
 	}
 
-	/** "Emily Johnson" (or the username if there is no name). */
+	/** "Emily Johnson"*/
 	get fullName() {
 		return `${this.firstName} ${this.lastName}`.trim();
 	}
