@@ -26,7 +26,8 @@ return new class extends Migration
             $table->string('descripcion', 255)->nullable();
             //Campo de fecha de creación del movimiento; se coge la fecha actual por defecto al crearlo
             $table->date('fecha_creacion')->useCurrent();
-            //Campo de registro al que pertenece el movimiento (opcional, ya que no todos los movimientos tienen un registro asociado)
+            //Campo de registro al que pertenece el movimiento
+            $table->foreignId('registro_id')->constrained('registros')->onDelete('cascade');
         });
     }
 

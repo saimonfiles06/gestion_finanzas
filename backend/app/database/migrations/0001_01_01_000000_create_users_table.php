@@ -12,11 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
+            // Campo de ID usuario autoincremental,
+            // no hace falta especificar autoIncrement() ya que es implícito en el método id()    
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('email', 255)->unique(); // Campo de correo electrónico único
+            $table->string('password', 255); // Campo de contraseña
+            // Campo de preferencias de modo
+            $table->enum('preferencias_modo', ['claro', 'oscuro'])->default('claro');
+            // Campo de fecha de registro; se coge la fecha actual por defecto al registrarse
+            $table->timestamp('fecha_registro')->useCurrent();
             $table->rememberToken();
             $table->timestamps();
         });
