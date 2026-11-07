@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('inversiones', function (Blueprint $table) {
             $table->id();
             //Campo de usuario al que pertenece la inversión
-            $table->foreignId('usuario_id')->constrained('usuarios')->onDelete('cascade');
+            $table->foreignId('usuario_id')->constrained('users')->onDelete('cascade');
             //Campo de banco al que pertenece la inversión
             $table->foreignId('banco_id')->constrained('bancos')->onDelete('cascade');
             //Campo de cantidad de la inversión

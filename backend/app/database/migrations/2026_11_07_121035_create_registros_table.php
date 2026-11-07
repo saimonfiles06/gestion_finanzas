@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('registros', function (Blueprint $table) {
             $table->id();
             //Campo de usuario al que pertenece el registro
-            $table->foreignId('usuario_id')->constrained('usuarios')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             //Campo de banco al que pertenece el registro
             $table->foreignId('banco_id')->constrained('bancos')->onDelete('cascade');
             //Campo de categoría al que pertenece el registro
@@ -28,7 +28,7 @@ return new class extends Migration
             //Campo de descripción del registro
             $table->string('descripcion', 255)->nullable();
             //Campo de fecha de creación del registro; se coge la fecha actual por defecto al crearlo
-            $table->date('fecha_creacion')->useCurrent();
+            $table->timestamps();
         });
     }
 

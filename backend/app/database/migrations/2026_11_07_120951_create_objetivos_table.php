@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('objetivos', function (Blueprint $table) {
             $table->id();
             //Campo de usuario al que pertenece el objetivo
-            $table->foreignId('usuario_id')->constrained('usuarios')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('nombre', 255); // Campo de nombre del objetivo
             $table->decimal('cantidad_objetivo', 15, 2); // Campo de cantidad objetivo
             // Campo de fecha objetivo para alcanzar el objetivo
-            $table->date('fecha_objetivo');
+            //Se añade nullable para permitir que el objetivo no tenga fecha límite
+            $table->date('fecha_objetivo')->nullable();
             // Campo de saldo actual del objetivo
             $table->decimal('saldo_actual', 15, 2)->default(0.00);
             //Fecha a la que se corresponde el saldo inicial del objetivo
@@ -28,7 +29,7 @@ return new class extends Migration
             //Campo para comprobar si el objetivo está configurado; por defecto es falso
             $table->boolean('configurado')->default(false);
             //Campo fecha creación del objetivo; se coge la fecha actual por defecto al crearlo
-            $table->date('fecha_creacion')->useCurrent();
+            $table->timestamps();
         });
     }
 
