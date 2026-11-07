@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('categorias', function (Blueprint $table) {
-            $table->id()->autoIncrement(); // Campo de ID categoría autoincremental
+            $table->id(); // Campo de ID categoría autoincremental
             //Campo de usuario al que pertenece la categoría
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('nombre', 255); // Campo de nombre de la categoría

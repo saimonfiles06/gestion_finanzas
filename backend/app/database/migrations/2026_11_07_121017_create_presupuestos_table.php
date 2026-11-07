@@ -23,6 +23,9 @@ return new class extends Migration
             $table->enum('periodo', ['mensual', 'anual']);
             //Fecha de creación del presupuesto; se coge la fecha actual por defecto al crearlo
             $table->timestamps();
+            //Restricción para que no se puedan crear dos presupuestos
+            // con la misma categoría y periodo para un mismo usuario
+            $table->unique(['user_id', 'categoria_id', 'periodo']);
         });
     }
 
