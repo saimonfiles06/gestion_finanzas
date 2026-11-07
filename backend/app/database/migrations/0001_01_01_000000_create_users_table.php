@@ -18,9 +18,7 @@ return new class extends Migration
             $table->string('email', 255)->unique(); // Campo de correo electrónico único
             $table->string('password', 255); // Campo de contraseña
             // Campo de preferencias de modo
-            $table->enum('preferencias_modo', ['claro', 'oscuro'])->default('claro');
-            // Campo de fecha de registro; se coge la fecha actual por defecto al registrarse
-            $table->timestamp('fecha_registro')->useCurrent();
+            $table->enum('preferencia_modo', ['claro', 'oscuro'])->default('claro');
             $table->rememberToken();
             $table->timestamps();
         });
