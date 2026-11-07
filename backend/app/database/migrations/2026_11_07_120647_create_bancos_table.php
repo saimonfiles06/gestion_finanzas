@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id(); // Campo de ID banco autoincremental
             //Campo de usuario al que pertenece el banco
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-             // Campo de nombre del banco único, evita nombres duplicados
+            // Campo de nombre del banco único, evita nombres duplicados
             $table->string('nombre', 255)->unique(['user_id', 'nombre']);
             $table->decimal('saldo_inicial', 15, 2)->default(0.00);
             //Fecha a la que se corresponde el saldo inicial
@@ -26,6 +26,9 @@ return new class extends Migration
             $table->boolean('eliminado')->default(false);
             //Fecha de creación del banco; se coge la fecha actual por defecto al crearlo
             $table->timestamps();
+            //Unicidad de nombre de banco por usuario;
+            //un usuario no puede tener dos bancos con el mismo nombre
+            $table->unique(['user_id', 'nombre']);
         });
     }
 

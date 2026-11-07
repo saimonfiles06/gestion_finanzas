@@ -24,7 +24,7 @@ return new class extends Migration
             //Campo de descripción de la inversión
             $table->string('descripcion', 255)->nullable();
             //Campo de fecha de creación de la inversión; se coge la fecha actual por defecto al crearlo
-            $table->date('fecha_creacion')->useCurrent();
+            $table->timestamps();
         });
     }
 
