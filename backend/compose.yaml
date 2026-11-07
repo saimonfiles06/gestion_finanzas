@@ -29,18 +29,5 @@ services:
       retries: 20
       start_period: 30s
 
-  phpmyadmin:
-    image: phpmyadmin:5
-    container_name: gestion-finanzas-phpmyadmin
-    ports:
-      - "127.0.0.1:8081:80"
-    environment:
-      PMA_HOST: db
-      PMA_PORT: 3306
-      UPLOAD_LIMIT: 64M
-    depends_on:
-      db:
-        condition: service_healthy
-
 volumes:
   mysql_data:
