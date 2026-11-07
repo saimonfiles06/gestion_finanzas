@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('categorias', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->id()->autoIncrement(); // Campo de ID categoría autoincremental
+             //Campo de usuario al que pertenece la categoría
+            $table->foreignId('usuario_id')->constrained('usuarios')->onDelete('cascade');
+            $table->string('nombre', 255); // Campo de nombre de la categoría
+            $table->enum('tipo', ['ingreso', 'gasto']); // Campo de tipo de categoría (ingreso o gasto)
+            $table->date('fecha_creacion')->useCurrent(); // Campo de fecha de creación de la categoría; se coge la fecha actual por defecto al crearla
         });
     }
 

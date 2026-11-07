@@ -13,7 +13,18 @@ return new class extends Migration
     {
         Schema::create('inversiones', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            //Campo de usuario al que pertenece la inversión
+            $table->foreignId('usuario_id')->constrained('usuarios')->onDelete('cascade');
+            //Campo de banco al que pertenece la inversión
+            $table->foreignId('banco_id')->constrained('bancos')->onDelete('cascade');
+            //Campo de cantidad de la inversión
+            $table->decimal('importe', 15, 2);
+            //Campo de fecha de la inversión
+            $table->date('fecha');
+            //Campo de descripción de la inversión
+            $table->string('descripcion', 255)->nullable();
+            //Campo de fecha de creación de la inversión; se coge la fecha actual por defecto al crearlo
+            $table->date('fecha_creacion')->useCurrent();
         });
     }
 
