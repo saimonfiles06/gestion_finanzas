@@ -16,7 +16,7 @@ return new class extends Migration
             //Campo de usuario al que pertenece el banco
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             // Campo de nombre del banco único, evita nombres duplicados
-            $table->string('nombre', 255)->unique(['user_id', 'nombre']);
+            $table->string('nombre', 255);
             $table->decimal('saldo_inicial', 15, 2)->default(0.00);
             //Fecha a la que se corresponde el saldo inicial
             $table->date('fecha_inicial');
