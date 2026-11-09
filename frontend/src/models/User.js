@@ -9,7 +9,6 @@ export class User {
 		this.email = email;
 		this.password = password;
 		this.preferencia_modo = preferencia_modo;
-		this.fecha_registro = fecha_registro;
 	}
 
 	/** "Emily Johnson"*/
@@ -24,7 +23,6 @@ export class User {
 			email: json.email,
 			password: json.password,
 			preferencia_modo: json.preferencia_modo,
-			fecha_registro: json.fecha_registro,
 		});
 	}
 
@@ -35,7 +33,6 @@ export class User {
 			email: this.email,
             password: this.password,
             preferencia_modo: this.preferencia_modo,
-            fecha_registro: this.fecha_registro,
 		};
 	}
 }

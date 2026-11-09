@@ -11,17 +11,13 @@ export class Bancos {
 		this.permite_ingresos = permite_ingresos;
 		this.permite_gastos = permite_gastos;
 		this.eliminado = eliminado;
-		this.fecha_creacion = fecha_creacion;
 	}
 
-	/** "Emily Johnson"*/
-	get fullName() {
-		return `${this.firstName} ${this.lastName}`.trim();
-	}
+	
 
 	/** Builds a User from the API JSON (extra fields are ignored). */
 	static fromJSON(json) {
-		return new User({
+		return new Bancos({
 			id: json.id,
             user_id: json.user_id,
             nombre: json.nombre,
@@ -30,7 +26,6 @@ export class Bancos {
             permite_ingresos: json.permite_ingresos,
             permite_gastos: json.permite_gastos,
             eliminado: json.eliminado,
-            fecha_creacion: json.fecha_creacion,
 		});
 	}
 
@@ -45,7 +40,6 @@ export class Bancos {
             permite_ingresos: this.permite_ingresos,
             permite_gastos: this.permite_gastos,
             eliminado: this.eliminado,
-            fecha_creacion: this.fecha_creacion,
 		};
 	}
 }
