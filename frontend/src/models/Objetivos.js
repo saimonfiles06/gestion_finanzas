@@ -1,10 +1,19 @@
 /**
- * User — the fields of a DummyJSON user that the app needs.
+ * Objetivos — objetivo de ahorro del usuario (tabla `objetivos`).
  */
-export class MovimientosBancos {
-    constructor({ id, banco_id, user_id, nombre = "", cantidad_objetivo = "", fecha_objetivo = "", saldo_actual = "", fecha_saldo = "", es_fondo_emergencia = "", configurado = "", }) {
+export class Objetivos {
+    constructor({
+        id,
+        user_id,
+        nombre = "",
+        cantidad_objetivo = "",
+        fecha_objetivo = null, // nullable en la BD
+        saldo_actual = "",
+        fecha_saldo = "",
+        es_fondo_emergencia = false,
+        configurado = false,
+    }) {
         this.id = id;
-        this.banco_id = banco_id;
         this.user_id = user_id;
         this.nombre = nombre;
         this.cantidad_objetivo = cantidad_objetivo;
@@ -15,36 +24,33 @@ export class MovimientosBancos {
         this.configurado = configurado;
     }
 
-
-
-    /** Builds a User from the API JSON (extra fields are ignored). */
+    /** Construye un Objetivos desde el JSON de la API (ignora campos extra). */
     static fromJSON(json) {
         return new Objetivos({
             id: json.id,
-            banco_id: json.banco_id,
             user_id: json.user_id,
             nombre: json.nombre,
             cantidad_objetivo: json.cantidad_objetivo,
             fecha_objetivo: json.fecha_objetivo,
             saldo_actual: json.saldo_actual,
             fecha_saldo: json.fecha_saldo,
-            es_fondo_emergencia:json.es_fondo_emergencia,
-            configurado:json.configurado,
+            es_fondo_emergencia: json.es_fondo_emergencia,
+            configurado: json.configurado,
         });
     }
 
-    /** Plain object, to save it in sessionStorage. */
+    /** Objeto plano para guardar en sessionStorage o enviar a la API. */
     toJSON() {
         return {
             id: this.id,
-            banco_id: this.banco_id,
-            user_id:this.user_id,
-            nombre:this.nombre,
-            cantidad_objetivo:this.cantidad_objetivo,
-            fecha_objetivo:this.fecha_objetivo, 
-            saldo_actual:this.saldo_actual,
-            fecha_saldo:this.fecha_saldo,
-            es_fondo_emergencia:this.es_fondo_emergencia,
+            user_id: this.user_id,
+            nombre: this.nombre,
+            cantidad_objetivo: this.cantidad_objetivo,
+            fecha_objetivo: this.fecha_objetivo,
+            saldo_actual: this.saldo_actual,
+            fecha_saldo: this.fecha_saldo,
+            es_fondo_emergencia: this.es_fondo_emergencia,
+            configurado: this.configurado,
         };
     }
 }

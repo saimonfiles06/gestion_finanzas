@@ -1,23 +1,23 @@
 /**
- * User — the fields of a DummyJSON user that the app needs.
+ * Registros — ingreso o gasto de un banco (tabla `registros`).
  */
 export class Registros {
-    constructor({ id, banco_id, categoria_id, tipo = "", importe = "", fecha = "", descripcion }) {
+    constructor({ id, user_id, banco_id, categoria_id, tipo = "", importe = "", fecha = "", descripcion = "" }) {
         this.id = id;
+        this.user_id = user_id;
         this.banco_id = banco_id;
         this.categoria_id = categoria_id;
-        this.tipo = tipo;
+        this.tipo = tipo; // 'ingreso' | 'gasto'
         this.importe = importe;
         this.fecha = fecha;
         this.descripcion = descripcion;
     }
 
-
-
-    /** Builds a User from the API JSON (extra fields are ignored). */
+    /** Construye un Registros desde el JSON de la API (ignora campos extra). */
     static fromJSON(json) {
         return new Registros({
             id: json.id,
+            user_id: json.user_id,
             banco_id: json.banco_id,
             categoria_id: json.categoria_id,
             tipo: json.tipo,
@@ -27,14 +27,17 @@ export class Registros {
         });
     }
 
-    /** Plain object, to save it in sessionStorage. */
+    /** Objeto plano para guardar en sessionStorage o enviar a la API. */
     toJSON() {
         return {
             id: this.id,
-            email: this.email,
-            password: this.password,
-            preferencia_modo: this.preferencia_modo,
-            fecha_registro: this.fecha_registro,
+            user_id: this.user_id,
+            banco_id: this.banco_id,
+            categoria_id: this.categoria_id,
+            tipo: this.tipo,
+            importe: this.importe,
+            fecha: this.fecha,
+            descripcion: this.descripcion,
         };
     }
 }

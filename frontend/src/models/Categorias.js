@@ -1,6 +1,4 @@
-/**
- * User — the fields of a DummyJSON user that the app needs.
- */
+
 export class Categorias {
     constructor({ id, user_id, nombre="",tipo=""}) {
         this.id = id;
@@ -12,7 +10,6 @@ export class Categorias {
 
 
 
-    /** Builds a User from the API JSON (extra fields are ignored). */
     static fromJSON(json) {
         return new Categorias({
             id: json.id,

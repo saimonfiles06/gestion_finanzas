@@ -1,6 +1,3 @@
-/**
- * User — the fields of a DummyJSON user that the app needs.
- */
 export class MovimientosBancos {
     constructor({ id, banco_id, registro_id, tipo = "", importe = "", fecha = "", descripcion = "" }) {
         this.id = id;
@@ -13,8 +10,6 @@ export class MovimientosBancos {
     }
 
 
-
-    /** Builds a User from the API JSON (extra fields are ignored). */
     static fromJSON(json) {
         return new MovimientosBancos({
             id: json.id,
