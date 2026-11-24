@@ -1,20 +1,19 @@
-name: gestion-finanzas
+name: gestion-finanzas-despliegue
 
 services:
+  # Backend: Laravel con Apache
   web:
+    container_name: backend
     build: .
-    container_name: gestion-finanzas-web
     ports:
       - "127.0.0.1:8080:80"
     volumes:
       - ./app:/var/www/html
-    depends_on:
-      db:
-        condition: service_healthy
 
+  # Base de datos: MySQL
   db:
+    container_name: bbdd
     image: mysql:8.4
-    container_name: gestion-finanzas-db
     environment:
       MYSQL_DATABASE: gestion_finanzas
       MYSQL_USER: gestion_finanzas_user
@@ -22,12 +21,6 @@ services:
       MYSQL_ROOT_PASSWORD: Finanzas_Root_2026
     volumes:
       - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-      start_period: 30s
 
   # Frontend: React con Vite
   frontend:
